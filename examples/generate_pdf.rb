@@ -1,14 +1,20 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'bundler/setup'
+# Add lib to the load path if running directly
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+
 require 'anvil'
+require 'anvil/env_loader'
+
+# Load .env file if it exists
+Anvil::EnvLoader.load(File.expand_path('../.env', __dir__))
 
 # Example: Generate PDFs from HTML or Markdown
 #
 # This example shows how to generate PDFs from HTML/CSS or Markdown content
 
-# Configure Anvil
+# Configure Anvil (will use ANVIL_API_KEY from .env)
 Anvil.configure do |config|
   config.api_key = ENV['ANVIL_API_KEY']
   config.environment = :development

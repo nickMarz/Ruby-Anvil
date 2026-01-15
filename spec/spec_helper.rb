@@ -1,20 +1,32 @@
-require 'bundler/setup'
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'anvil'
-require 'vcr'
-require 'webmock/rspec'
+require 'anvil/env_loader'
 
-# VCR configuration for recording API interactions
-VCR.configure do |config|
-  config.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
-  config.hook_into :webmock
-  config.configure_rspec_metadata!
+# Load .env file for tests
+Anvil::EnvLoader.load(File.expand_path('../.env', __dir__))
 
-  # Filter sensitive data
-  config.filter_sensitive_data('<API_KEY>') { ENV['ANVIL_API_KEY'] }
-  config.filter_sensitive_data('<WEBHOOK_TOKEN>') { ENV['ANVIL_WEBHOOK_TOKEN'] }
+# Only load VCR/WebMock if they're available (for full test suite)
+begin
+  require 'vcr'
+  require 'webmock/rspec'
+rescue LoadError
+  # VCR and WebMock are optional for basic tests
+end
 
-  # Allow localhost for test servers
-  config.ignore_localhost = true
+# VCR configuration for recording API interactions (if available)
+if defined?(VCR)
+  VCR.configure do |config|
+    config.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
+    config.hook_into :webmock
+    config.configure_rspec_metadata!
+
+    # Filter sensitive data
+    config.filter_sensitive_data('<API_KEY>') { ENV['ANVIL_API_KEY'] }
+    config.filter_sensitive_data('<WEBHOOK_TOKEN>') { ENV['ANVIL_WEBHOOK_TOKEN'] }
+
+    # Allow localhost for test servers
+    config.ignore_localhost = true
+  end
 end
 
 RSpec.configure do |config|

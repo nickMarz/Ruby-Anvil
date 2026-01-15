@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
-require 'net/http/post/multipart' rescue LoadError
+# Try to load multipart support but don't fail if not available
+begin
+  require 'net/http/post/multipart'
+rescue LoadError
+  # Multipart support is optional
+end
 
 module Anvil
   class Client
@@ -61,10 +66,9 @@ module Anvil
       http.open_timeout = config.open_timeout
       http.read_timeout = config.timeout
 
-      # Debug output in development
-      if config.development?
-        http.set_debug_output($stdout)
-      end
+      # Debug output only if explicitly requested
+      # Uncomment for debugging:
+      # http.set_debug_output($stdout)
 
       http
     end

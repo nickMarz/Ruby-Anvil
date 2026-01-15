@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'bundler/setup'
+# Add lib to the load path if running directly
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+
 require 'anvil'
 
 # Example: Fill a PDF template with data

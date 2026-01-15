@@ -34,9 +34,20 @@ module Anvil
     private
 
     def parse_errors(response)
-      return [] unless response&.body
+      return [] unless response
 
-      data = JSON.parse(response.body)
+      # Handle different response types
+      body = if response.respond_to?(:body)
+               response.body
+             elsif response.is_a?(String)
+               response
+             else
+               return []
+             end
+
+      return [] if body.nil? || body.empty?
+
+      data = JSON.parse(body)
       data['errors'] || data['fields'] || []
     rescue JSON::ParserError
       []
