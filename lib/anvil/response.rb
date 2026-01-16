@@ -75,8 +75,11 @@ module Anvil
       headers['retry-after']&.to_i
     end
 
+    def content_type
+      headers['content-type'] || ''
+    end
+
     def binary?
-      content_type = headers['content-type'] || ''
       content_type.include?('application/pdf') ||
         content_type.include?('application/octet-stream') ||
         content_type.include?('application/zip')

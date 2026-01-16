@@ -85,8 +85,15 @@ RSpec.describe Anvil::PDF do
     let(:response) { instance_double(Anvil::Response, binary?: true, raw_body: pdf_data) }
 
     before do
+      # Reset class-level client to avoid test double leaking
+      described_class.instance_variable_set(:@client, nil)
       allow(Anvil::Client).to receive(:new).and_return(client)
       allow(client).to receive(:post).and_return(response)
+    end
+
+    after do
+      # Clean up class-level client after each test
+      described_class.instance_variable_set(:@client, nil)
     end
 
     it 'fills PDF template with data' do
@@ -145,8 +152,15 @@ RSpec.describe Anvil::PDF do
     let(:response) { instance_double(Anvil::Response, binary?: true, raw_body: pdf_data) }
 
     before do
+      # Reset class-level client to avoid test double leaking
+      described_class.instance_variable_set(:@client, nil)
       allow(Anvil::Client).to receive(:new).and_return(client)
       allow(client).to receive(:post).and_return(response)
+    end
+
+    after do
+      # Clean up class-level client after each test
+      described_class.instance_variable_set(:@client, nil)
     end
 
     context 'with HTML' do
@@ -199,8 +213,15 @@ RSpec.describe Anvil::PDF do
     let(:response) { instance_double(Anvil::Response, binary?: true, raw_body: pdf_data) }
 
     before do
+      # Reset class-level client to avoid test double leaking
+      described_class.instance_variable_set(:@client, nil)
       allow(Anvil::Client).to receive(:new).and_return(client)
       allow(client).to receive(:post).and_return(response)
+    end
+
+    after do
+      # Clean up class-level client after each test
+      described_class.instance_variable_set(:@client, nil)
     end
 
     it 'generates PDF from HTML and CSS' do
@@ -224,8 +245,15 @@ RSpec.describe Anvil::PDF do
     let(:response) { instance_double(Anvil::Response, binary?: true, raw_body: pdf_data) }
 
     before do
+      # Reset class-level client to avoid test double leaking
+      described_class.instance_variable_set(:@client, nil)
       allow(Anvil::Client).to receive(:new).and_return(client)
       allow(client).to receive(:post).and_return(response)
+    end
+
+    after do
+      # Clean up class-level client after each test
+      described_class.instance_variable_set(:@client, nil)
     end
 
     it 'generates PDF from markdown string' do
