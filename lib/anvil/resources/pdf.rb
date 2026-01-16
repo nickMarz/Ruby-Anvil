@@ -22,13 +22,14 @@ module Anvil
     # Save and raise on error
     def save_as!(filename, mode = 'wb')
       save_as(filename, mode)
-    rescue => e
+    rescue StandardError => e
       raise FileError, "Failed to save PDF: #{e.message}"
     end
 
     # Get the PDF as a base64 encoded string
     def to_base64
       return nil unless raw_data
+
       Base64.strict_encode64(raw_data)
     end
 
@@ -39,13 +40,13 @@ module Anvil
 
     def size_human
       size_in_bytes = size
-      return '0 B' if size_in_bytes == 0
+      return '0 B' if size_in_bytes.zero?
 
       units = %w[B KB MB GB]
       exp = (Math.log(size_in_bytes) / Math.log(1024)).to_i
       exp = units.size - 1 if exp >= units.size
 
-      "%.2f %s" % [size_in_bytes.to_f / (1024**exp), units[exp]]
+      format('%.2f %s', size_in_bytes.to_f / (1024**exp), units[exp])
     end
 
     class << self
@@ -70,11 +71,9 @@ module Anvil
 
         response = client.post(path, payload)
 
-        if response.binary?
-          new(response.raw_body, { template_id: template_id }, client: client)
-        else
-          raise APIError, "Expected PDF response but got: #{response.content_type}"
-        end
+        raise APIError, "Expected PDF response but got: #{response.content_type}" unless response.binary?
+
+        new(response.raw_body, { template_id: template_id }, client: client)
       end
 
       # Generate a PDF from HTML or Markdown
@@ -86,7 +85,7 @@ module Anvil
       # @option options [Hash] :page Page configuration
       # @option options [String] :api_key Optional API key override
       # @return [PDF] The generated PDF
-      def generate(type: :markdown, data:, **options)
+      def generate(data:, type: :markdown, **options)
         api_key = options.delete(:api_key)
         client = api_key ? Client.new(api_key: api_key) : self.client
 
@@ -100,11 +99,9 @@ module Anvil
 
         response = client.post(path, payload)
 
-        if response.binary?
-          new(response.raw_body, { type: type }, client: client)
-        else
-          raise APIError, "Expected PDF response but got: #{response.content_type}"
-        end
+        raise APIError, "Expected PDF response but got: #{response.content_type}" unless response.binary?
+
+        new(response.raw_body, { type: type }, client: client)
       end
 
       # Convenience methods for specific generation types

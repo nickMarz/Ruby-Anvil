@@ -28,7 +28,7 @@ module Anvil
     def initialize(message, response = nil)
       @status_code = response&.code&.to_i
       @errors = parse_errors(response) if response
-      super(message, response)
+      super
     end
 
     private
@@ -57,6 +57,7 @@ module Anvil
   # Specific API error types
   class ValidationError < APIError; end
   class AuthenticationError < APIError; end
+
   class RateLimitError < APIError
     attr_reader :retry_after
 

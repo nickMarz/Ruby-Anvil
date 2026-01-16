@@ -15,7 +15,7 @@ require 'anvil'
 
 # Configure Anvil (optional if using ENV var)
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.environment = :development # Use development for testing
 end
 
@@ -68,23 +68,22 @@ begin
   filename = "filled_pdf_#{Time.now.to_i}.pdf"
   pdf.save_as(filename)
 
-  puts "✅ PDF filled successfully!"
+  puts '✅ PDF filled successfully!'
   puts "📄 Saved as: #{filename}"
   puts "📏 Size: #{pdf.size_human}"
 
   # You can also get the PDF as base64 for storing in a database
   # base64_pdf = pdf.to_base64
   # puts "Base64 length: #{base64_pdf.length}" if base64_pdf
-
 rescue Anvil::ValidationError => e
   puts "❌ Validation error: #{e.message}"
   puts "Errors: #{e.errors.inspect}" if e.errors.any?
 rescue Anvil::AuthenticationError => e
   puts "❌ Authentication failed: #{e.message}"
-  puts "Please check your API key"
+  puts 'Please check your API key'
 rescue Anvil::Error => e
   puts "❌ Anvil error: #{e.message}"
-rescue => e
+rescue StandardError => e
   puts "❌ Unexpected error: #{e.message}"
   puts e.backtrace.first(5)
 end

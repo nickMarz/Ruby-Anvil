@@ -62,9 +62,7 @@ module Anvil
           @client ||= Client.new
         end
 
-        def client=(new_client)
-          @client = new_client
-        end
+        attr_writer :client
 
         # Override in subclasses to provide resource-specific client
         def with_client(api_key: nil)

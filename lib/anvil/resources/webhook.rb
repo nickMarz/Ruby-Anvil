@@ -46,9 +46,7 @@ module Anvil
     def valid?(expected_token = nil)
       expected_token ||= Anvil.configuration.webhook_token
 
-      if expected_token.nil? || expected_token.empty?
-        raise WebhookVerificationError, 'No webhook token configured'
-      end
+      raise WebhookVerificationError, 'No webhook token configured' if expected_token.nil? || expected_token.empty?
 
       return false unless token
 
@@ -57,22 +55,21 @@ module Anvil
     end
 
     def valid!
-      unless valid?
-        raise WebhookVerificationError, 'Invalid webhook token'
-      end
+      raise WebhookVerificationError, 'Invalid webhook token' unless valid?
+
       true
     end
 
     # Check if data is encrypted
     def encrypted?
-      data.is_a?(String) && data.match?(/^[A-Za-z0-9+\/=]+$/)
+      data.is_a?(String) && data.match?(%r{^[A-Za-z0-9+/=]+$})
     end
 
     # Decrypt the webhook data (requires RSA private key)
     def decrypt(private_key_path = nil)
       return data unless encrypted?
 
-      private_key_path ||= ENV['ANVIL_RSA_PRIVATE_KEY_PATH']
+      private_key_path ||= ENV.fetch('ANVIL_RSA_PRIVATE_KEY_PATH', nil)
 
       unless private_key_path && File.exist?(private_key_path)
         raise WebhookError, 'Private key not found for decrypting webhook data'
@@ -83,7 +80,7 @@ module Anvil
         encrypted_data = Base64.decode64(data)
         decrypted = private_key.private_decrypt(encrypted_data, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)
         JSON.parse(decrypted, symbolize_names: true)
-      rescue => e
+      rescue StandardError => e
         raise WebhookError, "Failed to decrypt webhook data: #{e.message}"
       end
     end
@@ -198,7 +195,7 @@ module Anvil
       result = 0
 
       l.zip(r).each { |x, y| result |= x ^ y }
-      result == 0
+      result.zero?
     end
   end
 end

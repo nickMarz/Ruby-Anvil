@@ -3,7 +3,7 @@
 module Anvil
   class RateLimiter
     MAX_RETRIES = 3
-    BASE_DELAY = 1.0  # Base delay in seconds
+    BASE_DELAY = 1.0 # Base delay in seconds
 
     attr_reader :max_retries, :base_delay
 
@@ -17,38 +17,32 @@ module Anvil
       last_error = nil
 
       loop do
-        begin
-          response = yield
+        response = yield
 
-          # Check if we got rate limited
-          if response.code == 429
-            retries += 1
-            if retries > max_retries
-              raise RateLimitError.new(
-                "Rate limit exceeded after #{max_retries} retries",
-                response
-              )
-            end
-
-            delay = calculate_delay(response, retries)
-            sleep(delay)
-            next
-          end
-
-          return response
-        rescue Timeout::Error, Errno::ECONNREFUSED, Errno::ECONNRESET => e
-          last_error = e
+        # Check if we got rate limited
+        if response.code == 429
           retries += 1
-
           if retries > max_retries
-            raise NetworkError.new(
-              "Network error after #{max_retries} retries: #{e.message}"
+            raise RateLimitError.new(
+              "Rate limit exceeded after #{max_retries} retries",
+              response
             )
           end
 
-          delay = exponential_backoff(retries)
+          delay = calculate_delay(response, retries)
           sleep(delay)
+          next
         end
+
+        return response
+      rescue Timeout::Error, Errno::ECONNREFUSED, Errno::ECONNRESET => e
+        last_error = e
+        retries += 1
+
+        raise NetworkError, "Network error after #{max_retries} retries: #{e.message}" if retries > max_retries
+
+        delay = exponential_backoff(retries)
+        sleep(delay)
       end
     end
 
@@ -56,7 +50,7 @@ module Anvil
 
     def calculate_delay(response, retry_count)
       # Use Retry-After header if available
-      if response.retry_after && response.retry_after > 0
+      if response.retry_after&.positive?
         response.retry_after
       else
         exponential_backoff(retry_count)
@@ -66,7 +60,7 @@ module Anvil
     def exponential_backoff(retry_count)
       # Exponential backoff with jitter
       delay = base_delay * (2**(retry_count - 1))
-      delay + (rand * delay * 0.1)  # Add 10% jitter
+      delay + (rand * delay * 0.1) # Add 10% jitter
     end
   end
 end

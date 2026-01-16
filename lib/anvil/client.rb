@@ -36,7 +36,7 @@ module Anvil
 
     private
 
-    def request(method, path, params: nil, body: nil, headers: {}, **options)
+    def request(method, path, params: nil, body: nil, headers: {}, **_options)
       uri = build_uri(path, params)
 
       rate_limiter.with_retry do
@@ -53,9 +53,7 @@ module Anvil
     def build_uri(path, params)
       uri = URI.parse(path.start_with?('http') ? path : "#{config.base_url}#{path}")
 
-      if params && !params.empty?
-        uri.query = URI.encode_www_form(params)
-      end
+      uri.query = URI.encode_www_form(params) if params && !params.empty?
 
       uri
     end
@@ -142,7 +140,7 @@ module Anvil
     # Special method for multipart uploads (requires multipart-post gem as optional dependency)
     def post_multipart(path, params = {}, files = {})
       unless defined?(Net::HTTP::Post::Multipart)
-        raise LoadError, "multipart-post gem is required for file uploads. Add it to your Gemfile."
+        raise LoadError, 'multipart-post gem is required for file uploads. Add it to your Gemfile.'
       end
 
       uri = build_uri(path, nil)
@@ -150,13 +148,13 @@ module Anvil
       # Convert files to UploadIO objects
       upload_params = params.dup
       files.each do |key, file|
-        if file.respond_to?(:read)
-          upload_params[key] = UploadIO.new(
-            file,
-            'application/octet-stream',
-            File.basename(file.path)
-          )
-        end
+        next unless file.respond_to?(:read)
+
+        upload_params[key] = UploadIO.new(
+          file,
+          'application/octet-stream',
+          File.basename(file.path)
+        )
       end
 
       rate_limiter.with_retry do

@@ -134,9 +134,9 @@ RSpec.describe Anvil::PDF do
       allow(response).to receive(:binary?).and_return(false)
       allow(response).to receive(:content_type).and_return('text/html')
 
-      expect {
+      expect do
         described_class.fill(template_id: template_id, data: data)
-      }.to raise_error(Anvil::APIError, /Expected PDF response/)
+      end.to raise_error(Anvil::APIError, /Expected PDF response/)
     end
   end
 
@@ -188,9 +188,9 @@ RSpec.describe Anvil::PDF do
     end
 
     it 'validates type parameter' do
-      expect {
+      expect do
         described_class.generate(type: :invalid, data: {})
-      }.to raise_error(ArgumentError, /Type must be :html or :markdown/)
+      end.to raise_error(ArgumentError, /Type must be :html or :markdown/)
     end
   end
 
@@ -252,9 +252,9 @@ RSpec.describe Anvil::PDF do
     end
 
     it 'raises error for invalid content type' do
-      expect {
+      expect do
         described_class.generate_from_markdown(123)
-      }.to raise_error(ArgumentError, /Markdown content must be a string or array/)
+      end.to raise_error(ArgumentError, /Markdown content must be a string or array/)
     end
   end
 end

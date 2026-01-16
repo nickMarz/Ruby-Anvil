@@ -16,7 +16,7 @@ Anvil::EnvLoader.load(File.expand_path('../.env', __dir__))
 
 # Configure Anvil (will use ANVIL_API_KEY from .env)
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.environment = :development
 end
 
@@ -193,7 +193,7 @@ def generate_html_invoice
   filename = "invoice_#{Time.now.to_i}.pdf"
   pdf.save_as(filename)
 
-  puts "✅ Invoice PDF generated!"
+  puts '✅ Invoice PDF generated!'
   puts "📄 Saved as: #{filename}"
   puts "📏 Size: #{pdf.size_human}"
 end
@@ -285,7 +285,7 @@ def generate_markdown_report
   filename = "report_#{Time.now.to_i}.pdf"
   pdf.save_as(filename)
 
-  puts "✅ Report PDF generated!"
+  puts '✅ Report PDF generated!'
   puts "📄 Saved as: #{filename}"
   puts "📏 Size: #{pdf.size_human}"
 end
@@ -321,28 +321,27 @@ def generate_simple_document
   filename = "simple_#{Time.now.to_i}.pdf"
   pdf.save_as(filename)
 
-  puts "✅ Simple PDF generated!"
+  puts '✅ Simple PDF generated!'
   puts "📄 Saved as: #{filename}"
 end
 
 # Run examples
 begin
-  puts "=" * 50
-  puts "Anvil PDF Generation Examples"
-  puts "=" * 50
+  puts '=' * 50
+  puts 'Anvil PDF Generation Examples'
+  puts '=' * 50
 
   generate_html_invoice
   generate_markdown_report
   generate_simple_document
 
   puts "\n✅ All examples completed successfully!"
-
 rescue Anvil::AuthenticationError => e
   puts "❌ Authentication failed: #{e.message}"
-  puts "Please set your ANVIL_API_KEY environment variable"
+  puts 'Please set your ANVIL_API_KEY environment variable'
 rescue Anvil::Error => e
   puts "❌ Anvil error: #{e.message}"
-rescue => e
+rescue StandardError => e
   puts "❌ Unexpected error: #{e.message}"
   puts e.backtrace.first(5)
 end

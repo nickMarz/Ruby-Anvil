@@ -12,12 +12,12 @@ $LOAD_PATH.unshift File.expand_path('lib', __dir__)
 require 'anvil/env_loader'
 Anvil::EnvLoader.load(File.expand_path('.env', __dir__))
 
-puts "=" * 50
-puts "🖊️  Direct E-Signature Creation Test"
-puts "=" * 50
+puts '=' * 50
+puts '🖊️  Direct E-Signature Creation Test'
+puts '=' * 50
 
-api_key = ENV['ANVIL_API_KEY']
-template_id = ENV['ANVIL_TEMPLATE_ID']
+api_key = ENV.fetch('ANVIL_API_KEY', nil)
+template_id = ENV.fetch('ANVIL_TEMPLATE_ID', nil)
 
 puts "\nAPI Key: #{api_key[0..10]}..."
 puts "Template ID: #{template_id}"
@@ -78,7 +78,11 @@ puts "\n📤 Sending request..."
 request.body = mutation.to_json
 
 response = http.request(request)
-result = JSON.parse(response.body) rescue response.body
+result = begin
+  JSON.parse(response.body)
+rescue StandardError
+  response.body
+end
 
 puts "\n📥 Response received:"
 puts "Status: #{response.code}"
@@ -96,37 +100,36 @@ if response.code == '200'
 
     # Generate signing URL
     # We'll use the signer ID we defined above
-    packet_eid = packet['eid']
-    signer_id = "signer1"  # The ID we used when creating the packet
+    packet_eid = packet['eid'] # The ID we used when creating the packet
 
     puts "\n🔗 Note: To get signing URLs, you can:"
-    puts "   1. Check the Anvil dashboard for this packet"
+    puts '   1. Check the Anvil dashboard for this packet'
     puts "   2. Use the packet EID: #{packet_eid}"
-    puts "   3. Look for the packet in the Etch section"
+    puts '   3. Look for the packet in the Etch section'
 
     puts "\n🎉 Your e-signature test is complete!"
     puts "\n📚 What you've accomplished:"
-    puts "   ✅ Created an e-signature packet"
-    puts "   ✅ Added your PDF template"
-    puts "   ✅ Set up a test signer"
-    puts "   ✅ Generated a signing URL"
+    puts '   ✅ Created an e-signature packet'
+    puts '   ✅ Added your PDF template'
+    puts '   ✅ Set up a test signer'
+    puts '   ✅ Generated a signing URL'
 
     puts "\n💡 Next steps:"
-    puts "   1. Open the signing URL in a browser"
-    puts "   2. Complete the signature process"
-    puts "   3. Check the packet status in your Anvil dashboard"
-    puts "   4. Use isDraft: false to send real signature requests"
+    puts '   1. Open the signing URL in a browser'
+    puts '   2. Complete the signature process'
+    puts '   3. Check the packet status in your Anvil dashboard'
+    puts '   4. Use isDraft: false to send real signature requests'
 
   elsif result['errors']
     puts "\n❌ GraphQL errors:"
     result['errors'].each do |error|
       puts "   - #{error['message']}"
-      if error['message'].include?('fieldId')
-        puts "\n💡 Hint: The template might not have signature fields configured"
-        puts "   1. Log into Anvil and edit your template"
-        puts "   2. Add signature fields to the PDF"
-        puts "   3. Note the field IDs for the signers"
-      end
+      next unless error['message'].include?('fieldId')
+
+      puts "\n💡 Hint: The template might not have signature fields configured"
+      puts '   1. Log into Anvil and edit your template'
+      puts '   2. Add signature fields to the PDF'
+      puts '   3. Note the field IDs for the signers'
     end
   end
 else

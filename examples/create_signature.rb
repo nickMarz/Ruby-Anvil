@@ -14,13 +14,13 @@ require 'anvil'
 
 # Configure Anvil
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.environment = :development
 end
 
 # Example: Create a signature packet for an employment agreement
 def create_employment_agreement
-  puts "📝 Creating e-signature packet for employment agreement..."
+  puts '📝 Creating e-signature packet for employment agreement...'
 
   # Create the signature packet
   packet = Anvil::Signature.create(
@@ -32,7 +32,7 @@ def create_employment_agreement
         name: 'John Doe',
         email: 'john.doe@example.com',
         role: 'employee',
-        signer_type: 'email'  # Email-based signing
+        signer_type: 'email' # Email-based signing
       },
       {
         name: 'Jane Smith',
@@ -46,7 +46,7 @@ def create_employment_agreement
     files: [
       {
         type: :pdf,
-        id: 'your_template_id_here'  # Replace with your PDF template ID
+        id: 'your_template_id_here' # Replace with your PDF template ID
       }
     ],
 
@@ -61,7 +61,7 @@ def create_employment_agreement
     webhook_url: 'https://yourapp.com/webhooks/anvil'
   )
 
-  puts "✅ Signature packet created!"
+  puts '✅ Signature packet created!'
   puts "📋 Packet ID: #{packet.eid}"
   puts "📊 Status: #{packet.status}"
   puts "👥 Signers: #{packet.signers.count}"
@@ -81,7 +81,7 @@ def generate_signing_urls(packet)
     puts "\n👤 Signer: #{signer.name} (#{signer.email})"
     puts "📊 Status: #{signer.status}"
     puts "🔗 Signing URL: #{url}"
-    puts "   Send this URL to the signer to complete their signature"
+    puts '   Send this URL to the signer to complete their signature'
   end
 end
 
@@ -106,9 +106,7 @@ def check_packet_status(packet_eid)
 
     puts "#{status_emoji} #{signer.name}: #{signer.status}"
 
-    if signer.complete?
-      puts "   Completed at: #{signer.completed_at}"
-    end
+    puts "   Completed at: #{signer.completed_at}" if signer.complete?
   end
 
   # Check if entire packet is complete
@@ -128,11 +126,11 @@ def list_signature_packets
 
   packets = Anvil::Signature.list(
     limit: 10,
-    status: 'sent'  # Filter by status (optional)
+    status: 'sent' # Filter by status (optional)
   )
 
   if packets.empty?
-    puts "No signature packets found"
+    puts 'No signature packets found'
   else
     packets.each do |packet|
       puts "\n📋 #{packet.name}"
@@ -161,9 +159,9 @@ end
 
 # Run the example
 begin
-  puts "=" * 50
-  puts "Anvil E-Signature Example"
-  puts "=" * 50
+  puts '=' * 50
+  puts 'Anvil E-Signature Example'
+  puts '=' * 50
 
   # Create a new signature packet
   packet = create_employment_agreement
@@ -179,21 +177,18 @@ begin
   list_signature_packets
 
   # Send reminders if needed
-  if packet.in_progress?
-    send_reminder(packet)
-  end
+  send_reminder(packet) if packet.in_progress?
 
   puts "\n✅ E-signature example completed!"
-
 rescue Anvil::ValidationError => e
   puts "❌ Validation error: #{e.message}"
   puts "Errors: #{e.errors.inspect}" if e.errors.any?
 rescue Anvil::AuthenticationError => e
   puts "❌ Authentication failed: #{e.message}"
-  puts "Please check your API key"
+  puts 'Please check your API key'
 rescue Anvil::Error => e
   puts "❌ Anvil error: #{e.message}"
-rescue => e
+rescue StandardError => e
   puts "❌ Unexpected error: #{e.message}"
   puts e.backtrace.first(5)
 end

@@ -92,16 +92,16 @@ module Anvil
 
         # Use full GraphQL endpoint URL
         response = client.post('https://graphql.useanvil.com/', {
-          query: create_packet_mutation,
-          variables: { input: payload }
-        })
+                                 query: create_packet_mutation,
+                                 variables: { input: payload }
+                               })
 
         data = response.data
-        if data[:data] && data[:data][:createEtchPacket]
-          new(data[:data][:createEtchPacket], client: client)
-        else
+        unless data[:data] && data[:data][:createEtchPacket]
           raise APIError, "Failed to create signature packet: #{data[:errors]}"
         end
+
+        new(data[:data][:createEtchPacket], client: client)
       end
 
       # Find a signature packet by ID
@@ -109,16 +109,14 @@ module Anvil
         client ||= self.client
 
         response = client.post('https://graphql.useanvil.com/', {
-          query: find_packet_query,
-          variables: { eid: packet_eid }
-        })
+                                 query: find_packet_query,
+                                 variables: { eid: packet_eid }
+                               })
 
         data = response.data
-        if data[:data] && data[:data][:etchPacket]
-          new(data[:data][:etchPacket], client: client)
-        else
-          raise NotFoundError, "Signature packet not found: #{packet_eid}"
-        end
+        raise NotFoundError, "Signature packet not found: #{packet_eid}" unless data[:data] && data[:data][:etchPacket]
+
+        new(data[:data][:etchPacket], client: client)
       end
 
       # List all signature packets
@@ -129,9 +127,9 @@ module Anvil
         variables[:status] = status if status
 
         response = client.post('https://graphql.useanvil.com/', {
-          query: list_packets_query,
-          variables: variables
-        })
+                                 query: list_packets_query,
+                                 variables: variables
+                               })
 
         data = response.data
         if data[:data] && data[:data][:etchPackets]
@@ -152,16 +150,14 @@ module Anvil
         payload[:clientUserId] = client_user_id if client_user_id
 
         response = client.post('https://graphql.useanvil.com/', {
-          query: generate_url_mutation,
-          variables: { input: payload }
-        })
+                                 query: generate_url_mutation,
+                                 variables: { input: payload }
+                               })
 
         data = response.data
-        if data[:data] && data[:data][:generateEtchSignURL]
-          data[:data][:generateEtchSignURL][:url]
-        else
-          raise APIError, "Failed to generate signing URL"
-        end
+        raise APIError, 'Failed to generate signing URL' unless data[:data] && data[:data][:generateEtchSignURL]
+
+        data[:data][:generateEtchSignURL][:url]
       end
 
       private
@@ -197,8 +193,8 @@ module Anvil
           if file[:type] == :pdf && file[:id]
             # Template ID should be castEid
             {
-              id: 'file1',  # File identifier
-              castEid: file[:id]  # Template ID
+              id: 'file1', # File identifier
+              castEid: file[:id] # Template ID
             }
           elsif file[:type] == :upload && file[:data]
             {
@@ -314,9 +310,9 @@ module Anvil
     end
 
     def completed_at
-      if attributes[:completed_at]
-        Time.parse(attributes[:completed_at])
-      end
+      return unless attributes[:completed_at]
+
+      Time.parse(attributes[:completed_at])
     end
 
     # Get signing URL for this signer

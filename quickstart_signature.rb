@@ -13,14 +13,14 @@ Anvil::EnvLoader.load(File.expand_path('.env', __dir__))
 
 # Configure Anvil
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.environment = :development
 end
 
-puts "=" * 50
-puts "Anvil E-Signature Quickstart"
-puts "=" * 50
-puts "\nUsing API Key: #{ENV['ANVIL_API_KEY'][0..10]}..."
+puts '=' * 50
+puts 'Anvil E-Signature Quickstart'
+puts '=' * 50
+puts "\nUsing API Key: #{ENV.fetch('ANVIL_API_KEY', nil)[0..10]}..."
 
 # Since the Signature class uses GraphQL, we need to test it differently
 # Let's create a test packet using the REST API directly
@@ -61,15 +61,15 @@ def create_test_etch_packet
 
   begin
     response = client.post('https://app.useanvil.com/graphql', {
-      query: mutation
-    })
+                             query: mutation
+                           })
 
     if response.success?
       data = response.data
       if data[:data] && data[:data][:createEtchPacket]
         packet = data[:data][:createEtchPacket]
 
-        puts "✅ Signature packet created successfully!"
+        puts '✅ Signature packet created successfully!'
         puts "\n📋 Packet Details:"
         puts "   EID: #{packet[:eid]}"
         puts "   Name: #{packet[:name]}"
@@ -90,14 +90,13 @@ def create_test_etch_packet
 
         packet
       else
-        puts "❌ No packet data returned"
+        puts '❌ No packet data returned'
         puts "Response: #{data.inspect}"
       end
     else
       puts "❌ Request failed: #{response.error_message}"
     end
-
-  rescue => e
+  rescue StandardError => e
     puts "❌ Error: #{e.message}"
     puts e.backtrace.first(5)
   end
@@ -123,24 +122,24 @@ def generate_signing_url(packet_eid, signer_eid)
 
   begin
     response = client.post('https://app.useanvil.com/graphql', {
-      query: mutation
-    })
+                             query: mutation
+                           })
 
     if response.success?
       data = response.data
       if data[:data] && data[:data][:generateEtchSignURL]
         url = data[:data][:generateEtchSignURL][:url]
-        puts "✅ Signing URL generated:"
+        puts '✅ Signing URL generated:'
         puts "   #{url}"
         puts "\n📧 Send this URL to the signer to collect their signature"
         url
       else
-        puts "❌ No URL returned"
+        puts '❌ No URL returned'
       end
     else
       puts "❌ Failed to generate URL: #{response.error_message}"
     end
-  rescue => e
+  rescue StandardError => e
     puts "❌ Error: #{e.message}"
   end
 end
@@ -164,8 +163,8 @@ def list_etch_packets
 
   begin
     response = client.post('https://app.useanvil.com/graphql', {
-      query: query
-    })
+                             query: query
+                           })
 
     if response.success?
       data = response.data
@@ -173,7 +172,7 @@ def list_etch_packets
         packets = data[:data][:etchPackets]
 
         if packets.empty?
-          puts "No signature packets found"
+          puts 'No signature packets found'
         else
           puts "Found #{packets.length} packet(s):"
           packets.each do |packet|
@@ -188,7 +187,7 @@ def list_etch_packets
     else
       puts "❌ Failed to list packets: #{response.error_message}"
     end
-  rescue => e
+  rescue StandardError => e
     puts "❌ Error: #{e.message}"
   end
 end
@@ -200,22 +199,22 @@ puts "\n🚀 Testing Anvil E-Signature API..."
 list_etch_packets
 
 # Create a new test packet
-packet = create_test_etch_packet
+create_test_etch_packet
 
-puts "\n" + "=" * 50
-puts "✅ E-Signature API test complete!"
-puts "=" * 50
+puts "\n#{'=' * 50}"
+puts '✅ E-Signature API test complete!'
+puts '=' * 50
 
 puts "\n📚 What just happened:"
-puts "1. Created a signature packet with the Anvil API"
-puts "2. Added a test signer"
-puts "3. Generated a signing URL"
+puts '1. Created a signature packet with the Anvil API'
+puts '2. Added a test signer'
+puts '3. Generated a signing URL'
 
 puts "\n💡 Next steps:"
-puts "1. The signer would receive the URL via email (in production)"
-puts "2. They click the link and sign the document"
-puts "3. You receive a webhook when complete"
-puts "4. You can download the signed document"
+puts '1. The signer would receive the URL via email (in production)'
+puts '2. They click the link and sign the document'
+puts '3. You receive a webhook when complete'
+puts '4. You can download the signed document'
 
 puts "\n📖 Learn more:"
-puts "   https://www.useanvil.com/docs/api/e-signatures"
+puts '   https://www.useanvil.com/docs/api/e-signatures'

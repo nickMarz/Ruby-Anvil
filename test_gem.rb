@@ -16,9 +16,9 @@ Anvil.configure do |config|
   config.environment = :development
 end
 
-puts "=" * 50
-puts "Testing Anvil Ruby Gem"
-puts "=" * 50
+puts '=' * 50
+puts 'Testing Anvil Ruby Gem'
+puts '=' * 50
 
 begin
   # Test 1: Generate a simple PDF from Markdown
@@ -37,7 +37,7 @@ begin
 
     Generated at: #{Time.now}
   MD
-  )
+                                         )
 
   filename = "test_output_#{Time.now.to_i}.pdf"
   pdf.save_as(filename)
@@ -49,9 +49,9 @@ begin
   puts "\n📄 Generating PDF from HTML..."
 
   pdf2 = Anvil::PDF.generate_from_html(
-    html: "<h1>Hello from Ruby!</h1><p>The Anvil gem is working!</p>",
-    css: "h1 { color: #007bff; }",
-    title: "Test PDF"
+    html: '<h1>Hello from Ruby!</h1><p>The Anvil gem is working!</p>',
+    css: 'h1 { color: #007bff; }',
+    title: 'Test PDF'
   )
 
   filename2 = "test_html_#{Time.now.to_i}.pdf"
@@ -61,13 +61,12 @@ begin
   puts "📏 Size: #{pdf2.size_human}"
 
   puts "\n🎉 All tests passed! Your Anvil Ruby gem is working!"
-
 rescue Anvil::AuthenticationError => e
   puts "❌ Authentication failed: #{e.message}"
-  puts "Please check your API key above"
+  puts 'Please check your API key above'
 rescue Anvil::Error => e
   puts "❌ Anvil error: #{e.message}"
-rescue => e
+rescue StandardError => e
   puts "❌ Error: #{e.message}"
   puts e.backtrace.first(3)
 end

@@ -36,7 +36,7 @@ module Anvil
     end
 
     def api_key
-      configuration&.api_key || ENV['ANVIL_API_KEY']
+      configuration&.api_key || ENV.fetch('ANVIL_API_KEY', nil)
     end
 
     def environment=(env)

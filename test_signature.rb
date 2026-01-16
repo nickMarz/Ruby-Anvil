@@ -12,20 +12,20 @@ Anvil::EnvLoader.load(File.expand_path('.env', __dir__))
 
 # Configure Anvil
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.environment = :development
 end
 
-puts "=" * 50
-puts "Anvil E-Signature Test"
-puts "=" * 50
+puts '=' * 50
+puts 'Anvil E-Signature Test'
+puts '=' * 50
 
 # Option 1: Create a test signature packet with a generated PDF
 def create_test_packet_with_generated_pdf
   puts "\n📝 Creating a test signature packet..."
 
   # First, generate a simple agreement PDF
-  puts "📄 Generating agreement PDF..."
+  puts '📄 Generating agreement PDF...'
 
   agreement_html = <<~HTML
     <!DOCTYPE html>
@@ -98,13 +98,13 @@ def create_test_packet_with_generated_pdf
   pdf.save_as(pdf_filename)
   puts "✅ Agreement PDF saved as: #{pdf_filename}"
 
-  # Note: In a real scenario, you would:
+  # NOTE: In a real scenario, you would:
   # 1. Upload this PDF to Anvil to get a template ID
   # 2. Or use an existing template ID from your Anvil account
 
   puts "\n⚠️  Note: To create an actual signature packet, you need:"
-  puts "   1. A PDF template ID from your Anvil account"
-  puts "   2. Or upload the generated PDF to Anvil first"
+  puts '   1. A PDF template ID from your Anvil account'
+  puts '   2. Or upload the generated PDF to Anvil first'
 
   pdf_filename
 end
@@ -113,10 +113,10 @@ end
 def create_signature_packet_with_template(template_id = nil)
   if template_id.nil?
     puts "\n❗ To test signatures with a template, you need a PDF template ID"
-    puts "   1. Log into Anvil: https://app.useanvil.com"
-    puts "   2. Upload a PDF template"
-    puts "   3. Get the template ID"
-    puts "   4. Pass it to this function"
+    puts '   1. Log into Anvil: https://app.useanvil.com'
+    puts '   2. Upload a PDF template'
+    puts '   3. Get the template ID'
+    puts '   4. Pass it to this function'
     return nil
   end
 
@@ -155,13 +155,13 @@ def create_signature_packet_with_template(template_id = nil)
 
       # Custom email settings
       email_subject: 'Please sign the test agreement',
-      email_body: 'This is a test signature request from the Anvil Ruby gem.',
+      email_body: 'This is a test signature request from the Anvil Ruby gem.'
 
       # Webhook for status updates (optional)
       # webhook_url: 'https://your-app.com/webhooks/anvil'
     )
 
-    puts "✅ Signature packet created successfully!"
+    puts '✅ Signature packet created successfully!'
     puts "\n📋 Packet Details:"
     puts "   ID: #{packet.eid}"
     puts "   Name: #{packet.name}"
@@ -175,11 +175,10 @@ def create_signature_packet_with_template(template_id = nil)
       puts "\n   👤 #{signer.name} (#{signer.email})"
       puts "      Status: #{signer.status}"
       puts "      URL: #{url}"
-      puts "      -> Send this URL to the signer to collect their signature"
+      puts '      -> Send this URL to the signer to collect their signature'
     end
 
     packet
-
   rescue Anvil::Error => e
     puts "❌ Error creating signature packet: #{e.message}"
     nil
@@ -189,7 +188,7 @@ end
 # Option 3: Simple test with mock data (for demonstration)
 def demonstrate_signature_api
   puts "\n📚 E-Signature API Demonstration"
-  puts "=" * 40
+  puts '=' * 40
 
   puts "\nThe Anvil::Signature class provides these methods:"
   puts "\n1️⃣  Create a signature packet:"
@@ -243,41 +242,40 @@ begin
   demonstrate_signature_api
 
   # Generate a test PDF
-  pdf_file = create_test_packet_with_generated_pdf
+  create_test_packet_with_generated_pdf
 
   # Try to create an actual signature packet
   # Replace 'your_template_id' with an actual template ID from your Anvil account
   template_id = ENV['ANVIL_TEMPLATE_ID'] || 'your_template_id_here'
 
-  if template_id != 'your_template_id_here'
+  if template_id == 'your_template_id_here'
+    puts "\n💡 To test with real signatures:"
+    puts '1. Log into Anvil: https://app.useanvil.com'
+    puts '2. Create or upload a PDF template'
+    puts '3. Get the template ID from the template settings'
+    puts '4. Either:'
+    puts '   - Set ANVIL_TEMPLATE_ID in your .env file'
+    puts "   - Or replace 'your_template_id_here' in this script"
+    puts '5. Run this script again'
+  else
     packet = create_signature_packet_with_template(template_id)
 
     if packet
       puts "\n🎯 Next Steps:"
-      puts "1. Send the signing URLs to the signers (or test them yourself)"
-      puts "2. Complete the signatures"
-      puts "3. Check the packet status with: packet.reload!"
-      puts "4. Download signed documents when complete"
+      puts '1. Send the signing URLs to the signers (or test them yourself)'
+      puts '2. Complete the signatures'
+      puts '3. Check the packet status with: packet.reload!'
+      puts '4. Download signed documents when complete'
     end
-  else
-    puts "\n💡 To test with real signatures:"
-    puts "1. Log into Anvil: https://app.useanvil.com"
-    puts "2. Create or upload a PDF template"
-    puts "3. Get the template ID from the template settings"
-    puts "4. Either:"
-    puts "   - Set ANVIL_TEMPLATE_ID in your .env file"
-    puts "   - Or replace 'your_template_id_here' in this script"
-    puts "5. Run this script again"
   end
 
   puts "\n✅ E-signature test complete!"
-
 rescue Anvil::AuthenticationError => e
   puts "❌ Authentication failed: #{e.message}"
-  puts "Please check your API key in .env"
+  puts 'Please check your API key in .env'
 rescue Anvil::Error => e
   puts "❌ Anvil error: #{e.message}"
-rescue => e
+rescue StandardError => e
   puts "❌ Unexpected error: #{e.message}"
   puts e.backtrace.first(5)
 end

@@ -15,11 +15,11 @@ require 'base64'
 # Load .env file
 Anvil::EnvLoader.load(File.expand_path('.env', __dir__))
 
-puts "=" * 50
-puts "Anvil E-Signature Packet Creation"
-puts "=" * 50
+puts '=' * 50
+puts 'Anvil E-Signature Packet Creation'
+puts '=' * 50
 
-api_key = ENV['ANVIL_API_KEY']
+api_key = ENV.fetch('ANVIL_API_KEY', nil)
 puts "\nUsing API Key: #{api_key[0..10]}..."
 
 # Step 1: Create a simple PDF to use for signing
@@ -65,8 +65,8 @@ def create_test_pdf(api_key)
   response = http.request(request)
 
   if response.code == '200'
-    puts "   ✅ PDF created successfully"
-    response.body  # Return the PDF binary data
+    puts '   ✅ PDF created successfully'
+    response.body # Return the PDF binary data
   else
     puts "   ❌ Failed to create PDF: #{response.code}"
     nil
@@ -74,7 +74,7 @@ def create_test_pdf(api_key)
 end
 
 # Step 2: Create an e-signature packet using REST API (simpler than GraphQL)
-def create_etch_packet_rest(api_key, pdf_data = nil)
+def create_etch_packet_rest(api_key, _pdf_data = nil)
   puts "\n📝 Creating e-signature packet via REST API..."
 
   # For now, create a simple packet without a file
@@ -92,7 +92,7 @@ def create_etch_packet_rest(api_key, pdf_data = nil)
   packet_data = {
     name: "Test Agreement #{Time.now.strftime('%Y-%m-%d %H:%M')}",
     isDraft: false,
-    isTest: true,  # Test mode - won't send real emails
+    isTest: true, # Test mode - won't send real emails
     signers: [
       {
         id: 'signer1',
@@ -106,10 +106,14 @@ def create_etch_packet_rest(api_key, pdf_data = nil)
   request.body = packet_data.to_json
 
   response = http.request(request)
-  result = JSON.parse(response.body) rescue response.body
+  result = begin
+    JSON.parse(response.body)
+  rescue StandardError
+    response.body
+  end
 
-  if response.code == '200' || response.code == '201'
-    puts "   ✅ Packet created successfully!"
+  if %w[200 201].include?(response.code)
+    puts '   ✅ Packet created successfully!'
     if result.is_a?(Hash)
       puts "   Packet ID: #{result['eid'] || result['id']}"
       puts "   Status: #{result['status']}"
@@ -120,7 +124,7 @@ def create_etch_packet_rest(api_key, pdf_data = nil)
     puts "   Response: #{result}"
     nil
   end
-rescue => e
+rescue StandardError => e
   puts "   ❌ Error: #{e.message}"
   nil
 end
@@ -168,18 +172,22 @@ def create_etch_packet_graphql(api_key)
   request.body = mutation.to_json
 
   response = http.request(request)
-  result = JSON.parse(response.body) rescue response.body
+  result = begin
+    JSON.parse(response.body)
+  rescue StandardError
+    response.body
+  end
 
   if response.code == '200'
     if result['data'] && result['data']['createEtchPacket']
       packet = result['data']['createEtchPacket']
-      puts "   ✅ Packet created via GraphQL!"
+      puts '   ✅ Packet created via GraphQL!'
       puts "   EID: #{packet['eid']}"
       puts "   Name: #{packet['name']}"
       puts "   Status: #{packet['status']}"
       packet
     else
-      puts "   ⚠️  GraphQL returned no data"
+      puts '   ⚠️  GraphQL returned no data'
       puts "   Errors: #{result['errors']}" if result['errors']
       nil
     end
@@ -188,7 +196,7 @@ def create_etch_packet_graphql(api_key)
     puts "   Response: #{result}"
     nil
   end
-rescue => e
+rescue StandardError => e
   puts "   ❌ Error: #{e.message}"
   nil
 end
@@ -202,23 +210,23 @@ packet = create_etch_packet_rest(api_key)
 # Also try GraphQL
 graphql_packet = create_etch_packet_graphql(api_key)
 
-puts "\n" + "=" * 50
-puts "Summary"
-puts "=" * 50
+puts "\n#{'=' * 50}"
+puts 'Summary'
+puts '=' * 50
 
 if packet || graphql_packet
-  puts "✅ Successfully created e-signature packet!"
+  puts '✅ Successfully created e-signature packet!'
   puts "\n📚 Next steps:"
-  puts "1. Log into Anvil: https://app.useanvil.com"
-  puts "2. Navigate to the Etch section"
-  puts "3. View your test packets"
-  puts "4. Get signing URLs for the signers"
+  puts '1. Log into Anvil: https://app.useanvil.com'
+  puts '2. Navigate to the Etch section'
+  puts '3. View your test packets'
+  puts '4. Get signing URLs for the signers'
   puts "\n💡 Note: Since we used isTest: true, no emails were sent"
 else
   puts "⚠️  Couldn't create a signature packet"
   puts "\n💡 Troubleshooting:"
-  puts "1. Check if your API key has e-signature permissions"
-  puts "2. Try creating a packet manually in the Anvil UI first"
-  puts "3. Check the Anvil documentation for required fields"
-  puts "   https://www.useanvil.com/docs/api/e-signatures"
+  puts '1. Check if your API key has e-signature permissions'
+  puts '2. Try creating a packet manually in the Anvil UI first'
+  puts '3. Check the Anvil documentation for required fields'
+  puts '   https://www.useanvil.com/docs/api/e-signatures'
 end

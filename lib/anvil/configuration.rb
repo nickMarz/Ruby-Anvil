@@ -10,11 +10,11 @@ module Anvil
     def initialize
       @environment = default_environment
       @base_url = 'https://app.useanvil.com/api/v1'
-      @graphql_url = 'https://app.useanvil.com/graphql'  # GraphQL endpoint
+      @graphql_url = 'https://app.useanvil.com/graphql' # GraphQL endpoint
       @timeout = 120         # Read timeout in seconds
       @open_timeout = 30     # Connection open timeout
-      @api_key = ENV['ANVIL_API_KEY']
-      @webhook_token = ENV['ANVIL_WEBHOOK_TOKEN']
+      @api_key = ENV.fetch('ANVIL_API_KEY', nil)
+      @webhook_token = ENV.fetch('ANVIL_WEBHOOK_TOKEN', nil)
     end
 
     def environment=(env)
@@ -22,6 +22,7 @@ module Anvil
       unless ENVIRONMENTS.include?(env)
         raise ArgumentError, "Invalid environment: #{env}. Must be one of: #{ENVIRONMENTS.join(', ')}"
       end
+
       @environment = env
     end
 
@@ -34,7 +35,7 @@ module Anvil
     end
 
     def webhook_token
-      @webhook_token || ENV['ANVIL_WEBHOOK_TOKEN']
+      @webhook_token || ENV.fetch('ANVIL_WEBHOOK_TOKEN', nil)
     end
 
     # Rate limits based on environment and plan
@@ -47,24 +48,24 @@ module Anvil
     end
 
     def validate!
-      if api_key.nil? || api_key.empty?
-        raise Anvil::ConfigurationError, <<~ERROR
-          No API key configured. Please set your API key using one of these methods:
+      return unless api_key.nil? || api_key.empty?
 
-          1. Rails initializer (config/initializers/anvil.rb):
-             Anvil.configure do |config|
-               config.api_key = Rails.application.credentials.anvil[:api_key]
-             end
+      raise Anvil::ConfigurationError, <<~ERROR
+        No API key configured. Please set your API key using one of these methods:
 
-          2. Environment variable:
-             export ANVIL_API_KEY="your_api_key_here"
+        1. Rails initializer (config/initializers/anvil.rb):
+           Anvil.configure do |config|
+             config.api_key = Rails.application.credentials.anvil[:api_key]
+           end
 
-          3. Direct assignment:
-             Anvil.api_key = "your_api_key_here"
+        2. Environment variable:
+           export ANVIL_API_KEY="your_api_key_here"
 
-          Get your API keys at: https://app.useanvil.com/organizations/settings/api
-        ERROR
-      end
+        3. Direct assignment:
+           Anvil.api_key = "your_api_key_here"
+
+        Get your API keys at: https://app.useanvil.com/organizations/settings/api
+      ERROR
     end
 
     private

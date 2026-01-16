@@ -16,7 +16,7 @@ require 'json'
 
 # Configure Anvil with webhook token
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.webhook_token = ENV['ANVIL_WEBHOOK_TOKEN'] || 'your_webhook_token_here'
   config.environment = :development
 end
@@ -54,7 +54,7 @@ class WebhookHandler
   private
 
   def handle_signer_complete(webhook)
-    puts "✅ Signer completed!"
+    puts '✅ Signer completed!'
     puts "   Signer: #{webhook.signer_name} (#{webhook.signer_email})"
     puts "   Signer ID: #{webhook.signer_eid}"
     puts "   Packet ID: #{webhook.packet_eid}"
@@ -66,20 +66,20 @@ class WebhookHandler
   end
 
   def handle_signer_status_update(webhook)
-    puts "📊 Signer status updated"
+    puts '📊 Signer status updated'
     puts "   Signer: #{webhook.signer_name}"
     puts "   New status: #{webhook.signer_status}"
 
     case webhook.signer_status
     when 'viewed'
-      puts "   👀 Signer has viewed the document"
+      puts '   👀 Signer has viewed the document'
     when 'signed'
-      puts "   ✍️  Signer has signed"
+      puts '   ✍️  Signer has signed'
     end
   end
 
   def handle_packet_complete(webhook)
-    puts "🎉 Signature packet complete!"
+    puts '🎉 Signature packet complete!'
     puts "   Packet ID: #{webhook.packet_eid}"
 
     # All signatures collected - download final documents
@@ -88,29 +88,29 @@ class WebhookHandler
   end
 
   def handle_workflow_created(webhook)
-    puts "🔧 Workflow created"
+    puts '🔧 Workflow created'
     puts "   Workflow ID: #{webhook.workflow_eid}"
   end
 
   def handle_workflow_complete(webhook)
-    puts "✅ Workflow complete!"
+    puts '✅ Workflow complete!'
     puts "   Workflow ID: #{webhook.workflow_eid}"
   end
 
   def handle_webform_complete(webhook)
-    puts "📝 Webform completed"
+    puts '📝 Webform completed'
     puts "   Webform ID: #{webhook.webform_eid}"
   end
 
   def handle_document_group_created(webhook)
-    puts "📄 Document group created"
+    puts '📄 Document group created'
     data = webhook.data
     puts "   Group ID: #{data[:documentGroupEid]}" if data[:documentGroupEid]
   end
 
-  def handle_test_webhook(webhook)
-    puts "🧪 Test webhook received!"
-    puts "   Your webhook endpoint is working correctly"
+  def handle_test_webhook(_webhook)
+    puts '🧪 Test webhook received!'
+    puts '   Your webhook endpoint is working correctly'
   end
 end
 
@@ -126,53 +126,51 @@ class WebhookServer
 
     # Mount webhook endpoint
     server.mount_proc '/webhooks/anvil' do |req, res|
-      begin
-        # Parse the webhook
-        webhook = Anvil::Webhook.new(
-          payload: req.body,
-          token: req.query['token'] || req.header['x-anvil-token']
-        )
+      # Parse the webhook
+      webhook = Anvil::Webhook.new(
+        payload: req.body,
+        token: req.query['token'] || req.header['x-anvil-token']
+      )
 
-        # Verify the webhook
-        if webhook.valid?
-          puts "✅ Webhook verified successfully"
+      # Verify the webhook
+      if webhook.valid?
+        puts '✅ Webhook verified successfully'
 
-          # Handle encrypted data if present
-          if webhook.encrypted?
-            puts "🔐 Webhook data is encrypted"
-            # To decrypt, you need your RSA private key:
-            # decrypted_data = webhook.decrypt('/path/to/private_key.pem')
-          end
-
-          # Process the webhook
-          @handler.handle(webhook)
-
-          # Return success response
-          res.status = 204  # No Content
-        else
-          puts "❌ Invalid webhook token!"
-          res.status = 401  # Unauthorized
-          res.body = 'Invalid token'
+        # Handle encrypted data if present
+        if webhook.encrypted?
+          puts '🔐 Webhook data is encrypted'
+          # To decrypt, you need your RSA private key:
+          # decrypted_data = webhook.decrypt('/path/to/private_key.pem')
         end
-      rescue Anvil::WebhookError => e
-        puts "❌ Webhook error: #{e.message}"
-        res.status = 400
-        res.body = e.message
-      rescue => e
-        puts "❌ Unexpected error: #{e.message}"
-        res.status = 500
-        res.body = 'Internal server error'
+
+        # Process the webhook
+        @handler.handle(webhook)
+
+        # Return success response
+        res.status = 204  # No Content
+      else
+        puts '❌ Invalid webhook token!'
+        res.status = 401  # Unauthorized
+        res.body = 'Invalid token'
       end
+    rescue Anvil::WebhookError => e
+      puts "❌ Webhook error: #{e.message}"
+      res.status = 400
+      res.body = e.message
+    rescue StandardError => e
+      puts "❌ Unexpected error: #{e.message}"
+      res.status = 500
+      res.body = 'Internal server error'
     end
 
     # Test endpoint
-    server.mount_proc '/test' do |req, res|
+    server.mount_proc '/test' do |_req, res|
       res.body = 'Webhook server is running!'
     end
 
     puts "🚀 Webhook server running on http://localhost:#{@port}"
     puts "📍 Webhook endpoint: http://localhost:#{@port}/webhooks/anvil"
-    puts "   Configure this URL in your Anvil account settings"
+    puts '   Configure this URL in your Anvil account settings'
     puts "\nPress Ctrl+C to stop the server"
 
     trap('INT') { server.shutdown }
@@ -238,7 +236,7 @@ def create_test_webhook
     }
   )
 
-  puts "Test webhook created:"
+  puts 'Test webhook created:'
   puts "   Action: #{webhook.action}"
   puts "   Valid: #{webhook.valid?}"
 
@@ -246,10 +244,10 @@ def create_test_webhook
 end
 
 # Run the example
-if __FILE__ == $0
-  puts "=" * 50
-  puts "Anvil Webhook Verification Example"
-  puts "=" * 50
+if __FILE__ == $PROGRAM_NAME
+  puts '=' * 50
+  puts 'Anvil Webhook Verification Example'
+  puts '=' * 50
 
   choice = ARGV[0]
 
@@ -268,7 +266,7 @@ if __FILE__ == $0
   when 'rails'
     # Show Rails controller example
     puts "\n📱 Rails Controller Example:"
-    puts "=" * 40
+    puts '=' * 40
     rails_controller_example
 
   else
@@ -277,7 +275,7 @@ if __FILE__ == $0
     puts "  ruby #{__FILE__} test    # Create and handle test webhook"
     puts "  ruby #{__FILE__} rails   # Show Rails controller example"
     puts "\nEnvironment variables:"
-    puts "  ANVIL_API_KEY      - Your Anvil API key"
-    puts "  ANVIL_WEBHOOK_TOKEN - Your webhook verification token"
+    puts '  ANVIL_API_KEY      - Your Anvil API key'
+    puts '  ANVIL_WEBHOOK_TOKEN - Your webhook verification token'
   end
 end

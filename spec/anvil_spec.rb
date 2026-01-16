@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Anvil do
   it 'has a version number' do
-    expect(Anvil::VERSION).not_to be nil
+    expect(Anvil::VERSION).not_to be_nil
     expect(Anvil::VERSION).to match(/^\d+\.\d+\.\d+/)
   end
 
@@ -118,7 +118,7 @@ RSpec.describe Anvil do
       described_class.reset_configuration!
 
       # API key should be nil or from ENV
-      expect(described_class.configuration.api_key).to eq(ENV['ANVIL_API_KEY'])
+      expect(described_class.configuration.api_key).to eq(ENV.fetch('ANVIL_API_KEY', nil))
 
       # Environment should be back to default
       expect(described_class.configuration.environment).to eq(:production)

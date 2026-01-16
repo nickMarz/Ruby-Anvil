@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'anvil'
 require 'anvil/env_loader'
@@ -21,8 +23,8 @@ if defined?(VCR)
     config.configure_rspec_metadata!
 
     # Filter sensitive data
-    config.filter_sensitive_data('<API_KEY>') { ENV['ANVIL_API_KEY'] }
-    config.filter_sensitive_data('<WEBHOOK_TOKEN>') { ENV['ANVIL_WEBHOOK_TOKEN'] }
+    config.filter_sensitive_data('<API_KEY>') { ENV.fetch('ANVIL_API_KEY', nil) }
+    config.filter_sensitive_data('<WEBHOOK_TOKEN>') { ENV.fetch('ANVIL_WEBHOOK_TOKEN', nil) }
 
     # Allow localhost for test servers
     config.ignore_localhost = true
@@ -41,7 +43,7 @@ RSpec.configure do |config|
   end
 
   # Reset Anvil configuration before each test
-  config.before(:each) do
+  config.before do
     Anvil.reset_configuration!
   end
 

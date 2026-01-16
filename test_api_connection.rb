@@ -13,11 +13,11 @@ require 'json'
 # Load .env file
 Anvil::EnvLoader.load(File.expand_path('.env', __dir__))
 
-puts "=" * 50
-puts "Anvil API Connection Test"
-puts "=" * 50
+puts '=' * 50
+puts 'Anvil API Connection Test'
+puts '=' * 50
 
-api_key = ENV['ANVIL_API_KEY']
+api_key = ENV.fetch('ANVIL_API_KEY', nil)
 puts "\nUsing API Key: #{api_key[0..10]}..."
 
 # Test 1: Direct REST API call (we know this works)
@@ -39,14 +39,14 @@ def test_rest_api(api_key)
   response = http.request(request)
 
   if response.code == '200'
-    puts "   ✅ REST API works! (PDF generated)"
+    puts '   ✅ REST API works! (PDF generated)'
     true
   else
     puts "   ❌ REST API failed: #{response.code}"
     puts "   Response: #{response.body[0..200]}"
     false
   end
-rescue => e
+rescue StandardError => e
   puts "   ❌ Error: #{e.message}"
   false
 end
@@ -82,11 +82,11 @@ def test_graphql_api(api_key)
   if response.code == '200'
     data = JSON.parse(response.body)
     if data['data']
-      puts "   ✅ GraphQL API works!"
+      puts '   ✅ GraphQL API works!'
       puts "   User: #{data['data']['currentUser']}"
       true
     else
-      puts "   ⚠️  GraphQL responded but no data"
+      puts '   ⚠️  GraphQL responded but no data'
       puts "   Response: #{response.body[0..200]}"
       false
     end
@@ -95,7 +95,7 @@ def test_graphql_api(api_key)
     puts "   Response: #{response.body[0..200]}"
     false
   end
-rescue => e
+rescue StandardError => e
   puts "   ❌ Error: #{e.message}"
   false
 end
@@ -110,10 +110,10 @@ def test_gem_client(api_key)
   end
 
   # Test PDF generation (we know this works)
-  pdf = Anvil::PDF.generate_from_markdown('# Test Document')
-  puts "   ✅ Gem client works! (PDF generated)"
+  Anvil::PDF.generate_from_markdown('# Test Document')
+  puts '   ✅ Gem client works! (PDF generated)'
   true
-rescue => e
+rescue StandardError => e
   puts "   ❌ Gem client error: #{e.message}"
   false
 end
@@ -123,9 +123,9 @@ rest_ok = test_rest_api(api_key)
 graphql_ok = test_graphql_api(api_key)
 gem_ok = test_gem_client(api_key)
 
-puts "\n" + "=" * 50
-puts "Test Results:"
-puts "=" * 50
+puts "\n#{'=' * 50}"
+puts 'Test Results:'
+puts '=' * 50
 puts "REST API:    #{rest_ok ? '✅' : '❌'}"
 puts "GraphQL API: #{graphql_ok ? '✅' : '❌'}"
 puts "Ruby Gem:    #{gem_ok ? '✅' : '❌'}"
@@ -135,9 +135,9 @@ if graphql_ok
 else
   puts "\n⚠️  GraphQL is not working. E-signatures require GraphQL."
   puts "\nPossible issues:"
-  puts "1. GraphQL might require a different authentication method"
-  puts "2. The endpoint might be different"
-  puts "3. Your account might not have GraphQL access"
+  puts '1. GraphQL might require a different authentication method'
+  puts '2. The endpoint might be different'
+  puts '3. Your account might not have GraphQL access'
   puts "\n💡 Try the REST API e-signature endpoints instead:"
-  puts "   POST https://app.useanvil.com/api/v1/etch-packets"
+  puts '   POST https://app.useanvil.com/api/v1/etch-packets'
 end
