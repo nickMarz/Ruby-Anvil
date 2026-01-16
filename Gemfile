@@ -8,5 +8,6 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 gemspec
 
 # Version constraint for Ruby 2.7+ compatibility
-# public_suffix 7.0+ requires Ruby >= 3.2
-gem 'public_suffix', '< 7.0'
+# public_suffix 6.0+ requires Ruby >= 3.0
+# public_suffix 5.x supports Ruby 2.6+
+gem 'public_suffix', '~> 5.0'
