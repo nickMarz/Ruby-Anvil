@@ -46,7 +46,7 @@ RSpec.configure do |config|
   config.before do
     # Mock environment variables to avoid configuration errors
     allow(ENV).to receive(:fetch).and_call_original
-    allow(ENV).to receive(:fetch).with('ANVIL_API_KEY', nil).and_return(nil)
+    allow(ENV).to receive(:fetch).with('ANVIL_API_KEY', nil).and_return('test_api_key')
     allow(ENV).to receive(:fetch).with('ANVIL_WEBHOOK_TOKEN', nil).and_return(nil)
 
     Anvil.reset_configuration!

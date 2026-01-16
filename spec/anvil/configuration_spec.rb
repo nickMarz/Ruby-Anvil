@@ -7,6 +7,7 @@ RSpec.describe Anvil::Configuration do
 
   describe '#initialize' do
     it 'sets default values' do
+      # Override global mock for this test
       allow(ENV).to receive(:fetch).with('ANVIL_API_KEY', nil).and_return(nil)
       allow(ENV).to receive(:fetch).with('ANVIL_WEBHOOK_TOKEN', nil).and_return(nil)
       config = described_class.new
