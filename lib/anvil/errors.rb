@@ -83,4 +83,7 @@ module Anvil
   # Webhook errors
   class WebhookError < Error; end
   class WebhookVerificationError < WebhookError; end
+
+  # GraphQL errors
+  class GraphQLError < APIError; end
 end

@@ -34,7 +34,60 @@ module Anvil
       request(:delete, path, params: params, **options)
     end
 
+    # Execute a GraphQL query
+    #
+    # @param query [String] The GraphQL query string
+    # @param variables [Hash] Variables for the query (optional)
+    # @param options [Hash] Additional options
+    # @return [Response] The API response containing query results
+    # @raise [GraphQLError] If the GraphQL query returns errors
+    #
+    # @example
+    #   result = client.query(
+    #     query: 'query GetUser { currentUser { eid name } }',
+    #     variables: {}
+    #   )
+    def query(query:, variables: {}, **options)
+      execute_graphql(query: query, variables: variables, **options)
+    end
+
+    # Execute a GraphQL mutation
+    #
+    # @param mutation [String] The GraphQL mutation string
+    # @param variables [Hash] Variables for the mutation (optional)
+    # @param options [Hash] Additional options
+    # @return [Response] The API response containing mutation results
+    # @raise [GraphQLError] If the GraphQL mutation returns errors
+    #
+    # @example
+    #   result = client.mutation(
+    #     mutation: 'mutation UpdateUser($input: JSON) { updateUser(input: $input) { eid } }',
+    #     variables: { input: { name: "John" } }
+    #   )
+    def mutation(mutation:, variables: {}, **options)
+      execute_graphql(query: mutation, variables: variables, **options)
+    end
+
     private
+
+    # Execute a GraphQL operation (query or mutation)
+    def execute_graphql(query:, variables: {}, **options)
+      graphql_url = options.delete(:graphql_url) || 'https://graphql.useanvil.com/'
+      
+      payload = { query: query }
+      payload[:variables] = variables unless variables.empty?
+
+      response = post(graphql_url, payload, options)
+      
+      # Check for GraphQL errors in response
+      data = response.data
+      if data[:errors] && !data[:errors].empty?
+        error_messages = data[:errors].map { |e| e[:message] || e['message'] }.join(', ')
+        raise GraphQLError.new("GraphQL error: #{error_messages}", response)
+      end
+
+      response
+    end
 
     def request(method, path, params: nil, body: nil, headers: {}, **_options)
       uri = build_uri(path, params)

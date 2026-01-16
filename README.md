@@ -36,27 +36,22 @@ $ gem install anvil-ruby
 
 ## Feature Status
 
-Current coverage: **~30% of Anvil's API**. See [API_COVERAGE.md](API_COVERAGE.md) for detailed implementation status.
+Current coverage: **~60% of Anvil's API**. See [API_COVERAGE.md](API_COVERAGE.md) for detailed implementation status.
 
 ### ✅ Implemented
 - **PDF Operations** - Fill templates, generate from HTML/Markdown
-- **E-Signatures (Basic)** - Create packets, get signing URLs, track status
+- **E-Signatures (Complete)** - Create, update, send, delete packets; manage signers; void documents
+- **Workflows** - Create workflows, start submissions, track progress
+- **Webforms** - Create forms, submit data, export submissions
 - **Webhooks** - Parse payloads, verify authenticity
+- **GraphQL Support** - Generic query/mutation interface for any API endpoint
 - **Core Infrastructure** - Rate limiting, error handling, flexible configuration
 
 ### 🚧 Roadmap
 
-#### Phase 1: Core Features (v0.2.0)
-- [ ] Generic GraphQL support for custom queries
-- [ ] Complete e-signature features (update, send, void packets)
-- [ ] Basic workflow support (create, start workflows)
-- [ ] Basic webform support (create forms, handle submissions)
-
 #### Phase 2: Advanced Features (v0.3.0)
-- [ ] Full workflow implementation with data management
-- [ ] Full webform/Forge implementation
-- [ ] Cast (PDF template) management
-- [ ] Webhook management API
+- [ ] Cast (PDF template) management (create, update, publish)
+- [ ] Webhook management API (CRUD operations, logs, retry)
 
 #### Phase 3: AI & Enterprise (v0.4.0)
 - [ ] Document AI/OCR capabilities
@@ -184,6 +179,130 @@ packet.reload!
 if packet.complete?
   puts "All signatures collected!"
 end
+
+# Update a packet
+packet.update(
+  name: "Updated Agreement",
+  signers: [...]
+)
+
+# Send a draft packet
+packet.send!
+
+# Skip a signer
+packet.skip_signer("signer_eid")
+
+# Send reminder
+signer = packet.signers.first
+signer.send_reminder!
+
+# Delete a draft packet
+packet.delete!
+
+# Void completed documents
+packet.void!(reason: "Contract cancelled")
+```
+
+### Workflows
+
+Create and manage multi-step document workflows:
+
+```ruby
+# Create a workflow
+workflow = Anvil::Workflow.create(
+  name: "Employee Onboarding",
+  forges: ["form_id_1", "form_id_2"],  # Form IDs
+  casts: ["template_id_1"]             # PDF template IDs
+)
+
+# Get workflow
+workflow = Anvil::Workflow.find("workflow_eid")
+
+# Start workflow with initial data
+submission = workflow.start(
+  data: {
+    employee_name: "John Doe",
+    employee_email: "john@example.com",
+    start_date: "2024-02-01"
+  }
+)
+
+# Check submission status
+submission.status          # "in_progress" or "complete"
+submission.current_step
+submission.completed_steps
+
+# Continue workflow from a step
+submission.continue(
+  step_id: "approval_step",
+  data: { manager_approval: true }
+)
+
+# Get all workflow submissions
+submissions = workflow.submissions(
+  status: "complete",
+  limit: 10
+)
+```
+
+### Webforms
+
+Create and manage data collection forms:
+
+```ruby
+# Create a webform
+form = Anvil::Webform.create(
+  name: "Contact Form",
+  fields: [
+    {
+      type: "text",
+      name: "full_name",
+      label: "Full Name",
+      required: true
+    },
+    {
+      type: "email",
+      name: "email",
+      label: "Email Address",
+      validation: { format: "email" }
+    },
+    {
+      type: "select",
+      name: "department",
+      label: "Department",
+      options: ["Sales", "Support", "Engineering"]
+    }
+  ],
+  styling: {
+    theme: "modern",
+    primary_color: "#007bff"
+  }
+)
+
+# Get form
+form = Anvil::Webform.find("form_eid")
+
+# Submit form data
+submission = form.submit(
+  data: {
+    full_name: "Jane Smith",
+    email: "jane@example.com",
+    department: "Engineering"
+  },
+  files: {
+    resume: File.open("resume.pdf")
+  }
+)
+
+# Get all submissions
+submissions = form.submissions(
+  from: 1.week.ago,
+  to: Date.today,
+  limit: 100
+)
+
+# Export submissions
+csv_data = form.export_submissions(format: :csv)
 ```
 
 ### Webhooks
@@ -253,6 +372,52 @@ end
 
 ## Advanced Usage
 
+### Generic GraphQL Support
+
+For features not yet wrapped by the gem, you can execute custom GraphQL queries and mutations:
+
+```ruby
+# Execute a custom query
+response = Anvil.query(
+  query: <<~GRAPHQL,
+    query GetCurrentUser {
+      currentUser {
+        eid
+        name
+        email
+      }
+    }
+  GRAPHQL
+  variables: {}
+)
+
+user = response.data[:data][:currentUser]
+
+# Execute a custom mutation
+response = Anvil.mutation(
+  mutation: <<~GRAPHQL,
+    mutation CreateCast($input: JSON) {
+      createCast(input: $input) {
+        eid
+        name
+      }
+    }
+  GRAPHQL
+  variables: {
+    input: {
+      name: "My Template",
+      file: base64_pdf
+    }
+  }
+)
+
+# Use with custom client for multi-tenancy
+client = Anvil::Client.new(api_key: tenant_key)
+response = client.query(query: graphql_query, variables: vars)
+```
+
+See the [GraphQL Reference](https://www.useanvil.com/docs/api/graphql/reference/) for available queries and mutations.
+
 ### Multi-tenant Applications
 
 Use different API keys per request:
@@ -284,6 +449,9 @@ rescue Anvil::ValidationError => e
 rescue Anvil::AuthenticationError => e
   # Invalid or missing API key
   puts "Auth failed: #{e.message}"
+rescue Anvil::GraphQLError => e
+  # GraphQL query/mutation errors
+  puts "GraphQL error: #{e.message}"
 rescue Anvil::RateLimitError => e
   # Rate limit exceeded
   puts "Rate limited. Retry after: #{e.retry_after} seconds"
@@ -346,7 +514,10 @@ See the [examples](examples/) directory for complete working examples:
 - [PDF Filling](examples/fill_pdf.rb)
 - [PDF Generation](examples/generate_pdf.rb)
 - [E-signatures](examples/create_signature.rb)
+- [Workflows](examples/workflow_example.rb)
+- [Webforms](examples/webform_example.rb)
 - [Webhook Handling](examples/verify_webhook.rb)
+- [Generic GraphQL Queries](examples/graphql_generic.rb)
 
 ## Development
 
