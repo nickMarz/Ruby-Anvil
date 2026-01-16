@@ -29,7 +29,7 @@ When starting a new session with this project, please:
 - ✅ Full documentation in `.github/workflows/README.md`
 
 ### Required Secrets
-- `RUBYGEMS_AUTH_TOKEN` - Must be added to GitHub for gem publishing
+- `RUBYGEM_API_KEY` - Must be added to GitHub for gem publishing
 - `ANVIL_API_KEY` - Optional, for running tests
 
 ### Project Conventions

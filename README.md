@@ -392,7 +392,7 @@ This project uses GitHub Actions for continuous integration and automated gem pu
 ### Quick Start
 
 1. Fork the repository
-2. Add your `RUBYGEMS_AUTH_TOKEN` secret to GitHub (Settings → Secrets)
+2. Add your `RUBYGEM_API_KEY` secret to GitHub (Settings → Secrets)
 3. Push your changes - CI will run automatically
 4. Create a version tag to publish: `git tag v0.2.0 && git push --tags`
 

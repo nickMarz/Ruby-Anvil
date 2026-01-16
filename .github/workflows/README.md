@@ -35,7 +35,7 @@ We have three main automation systems:
 
    | Secret Name | Required | Description | How to Get |
    |------------|----------|-------------|------------|
-   | `RUBYGEMS_AUTH_TOKEN` | Yes (for publishing) | RubyGems.org API key | [Create at rubygems.org](https://rubygems.org/profile/api_keys) |
+   | `RUBYGEM_API_KEY` | Yes (for publishing) | RubyGems.org API key | [Create at rubygems.org](https://rubygems.org/profile/api_keys) |
    | `ANVIL_API_KEY` | Optional | Anvil API key for tests | From your Anvil dashboard |
 
 ### Setting up RubyGems Authentication
@@ -46,7 +46,7 @@ We have three main automation systems:
 4. Name: `anvil-ruby-github-actions`
 5. Scope: Select "Push rubygems"
 6. Copy the generated key
-7. Add to GitHub Secrets as `RUBYGEMS_AUTH_TOKEN`
+7. Add to GitHub Secrets as `RUBYGEM_API_KEY`
 
 ## 📁 Workflow Details
 
@@ -205,7 +205,7 @@ git ls-files
 **Error:** `Your rubygems.org credentials aren't set`
 
 **Solution:**
-- Verify `RUBYGEMS_AUTH_TOKEN` secret is set correctly
+- Verify `RUBYGEM_API_KEY` secret is set correctly
 - Ensure the API key has "Push rubygems" permission
 - Check the API key hasn't expired
 

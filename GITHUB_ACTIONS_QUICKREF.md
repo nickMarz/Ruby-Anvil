@@ -59,7 +59,7 @@ gh workflow run gem-push.yml --ref main
 
 | Secret | Where to Get | Required For |
 |--------|--------------|--------------|
-| `RUBYGEMS_AUTH_TOKEN` | [rubygems.org/profile/api_keys](https://rubygems.org/profile/api_keys) | Publishing gems |
+| `RUBYGEM_API_KEY` | [rubygems.org/profile/api_keys](https://rubygems.org/profile/api_keys) | Publishing gems |
 | `ANVIL_API_KEY` | Anvil Dashboard | Running tests (optional) |
 
 ## 🔧 Workflow Files
@@ -100,7 +100,7 @@ Before merging PRs, ensure these checks pass:
 ### RubyGems Publication Failed
 ```bash
 # Check if secret is set
-# Settings → Secrets → Actions → RUBYGEMS_AUTH_TOKEN
+# Settings → Secrets → Actions → RUBYGEM_API_KEY
 
 # Verify API key permissions at rubygems.org
 # Should have "Push rubygems" scope
