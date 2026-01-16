@@ -4,8 +4,8 @@ module Anvil
   class PDF < Resources::Base
     attr_reader :raw_data
 
-    def initialize(raw_data, attributes = {}, client: nil)
-      super(attributes, client: client)
+    def initialize(raw_data, attributes = {}, **options)
+      super(attributes, **options)
       @raw_data = raw_data
     end
 
