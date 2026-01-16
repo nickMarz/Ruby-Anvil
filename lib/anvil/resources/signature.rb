@@ -90,8 +90,8 @@ module Anvil
 
         payload = build_create_payload(name, signers, files, options)
 
-        # This would use GraphQL mutation, simplified for now
-        response = client.post('/graphql', {
+        # Use full GraphQL endpoint URL
+        response = client.post('https://graphql.useanvil.com/', {
           query: create_packet_mutation,
           variables: { input: payload }
         })
@@ -108,7 +108,7 @@ module Anvil
       def find(packet_eid, client: nil)
         client ||= self.client
 
-        response = client.post('/graphql', {
+        response = client.post('https://graphql.useanvil.com/', {
           query: find_packet_query,
           variables: { eid: packet_eid }
         })
@@ -128,7 +128,7 @@ module Anvil
         variables = { limit: limit, offset: offset }
         variables[:status] = status if status
 
-        response = client.post('/graphql', {
+        response = client.post('https://graphql.useanvil.com/', {
           query: list_packets_query,
           variables: variables
         })
@@ -151,7 +151,7 @@ module Anvil
         }
         payload[:clientUserId] = client_user_id if client_user_id
 
-        response = client.post('/graphql', {
+        response = client.post('https://graphql.useanvil.com/', {
           query: generate_url_mutation,
           variables: { input: payload }
         })
@@ -195,9 +195,10 @@ module Anvil
       def build_files_payload(files)
         files.map do |file|
           if file[:type] == :pdf && file[:id]
+            # Template ID should be castEid
             {
-              type: 'pdf',
-              id: file[:id]
+              id: 'file1',  # File identifier
+              castEid: file[:id]  # Template ID
             }
           elsif file[:type] == :upload && file[:data]
             {
@@ -214,8 +215,8 @@ module Anvil
       # GraphQL queries and mutations (simplified versions)
       def create_packet_mutation
         <<~GRAPHQL
-          mutation CreateEtchPacket($input: CreateEtchPacketInput!) {
-            createEtchPacket(input: $input) {
+          mutation CreateEtchPacket($input: JSON) {
+            createEtchPacket(variables: $input) {
               eid
               name
               status

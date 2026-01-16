@@ -12,7 +12,7 @@ Building a Ruby gem for the Anvil API (document automation and e-signatures) fol
 ## 📁 Key Files & Locations
 
 ### Core Files
-- `/Users/Nick.Marazzo/Documents/GitHub/anvil/anvil-ruby/` - Project root
+- `/Users/Nick.Marazzo/Documents/GitHub/anvil-ruby/` - Project root
 - `.env` - Contains `ANVIL_API_KEY` and `ANVIL_TEMPLATE_ID`
 - `.ruby-version` - Ruby 3.4.8
 - `API_COVERAGE.md` - Comprehensive feature tracking (70% missing features documented)

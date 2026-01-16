@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true  # runs 'bundle install' and caches installed gems
+
+    - name: Run RuboCop
+      run: bundle exec rubocop
+
+  test:
+    name: Test (Ruby ${{ matrix.ruby-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version: ['2.7', '3.0', '3.1', '3.2', '3.3']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby ${{ matrix.ruby-version }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+        bundler-cache: true  # runs 'bundle install' and caches installed gems
+
+    - name: Run tests
+      run: bundle exec rspec
+      env:
+        ANVIL_API_KEY: ${{ secrets.ANVIL_API_KEY }}  # If your tests need API keys
+
+    - name: Upload coverage reports to Codecov
+      if: matrix.ruby-version == '3.2'  # Only upload once
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  build:
+    name: Build Gem
+    runs-on: ubuntu-latest
+    needs: [lint, test]  # Only build if tests and linting pass
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: Build gem
+      run: gem build *.gemspec
+
+    - name: Upload gem artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gem
+        path: '*.gem'
+        retention-days: 7
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: Run bundler-audit
+      run: |
+        gem install bundler-audit
+        bundle-audit check --update
+
+    - name: Run brakeman (if Rails)
+      run: |
+        if [ -f "config/application.rb" ]; then
+          gem install brakeman
+          brakeman
+        else
+          echo "Not a Rails application, skipping Brakeman"
+        fi
+      continue-on-error: true

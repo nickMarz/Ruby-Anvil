@@ -4,12 +4,13 @@ module Anvil
   class Configuration
     ENVIRONMENTS = %i[development production].freeze
 
-    attr_accessor :api_key, :environment, :base_url, :timeout, :open_timeout
+    attr_accessor :api_key, :environment, :base_url, :graphql_url, :timeout, :open_timeout
     attr_writer :webhook_token
 
     def initialize
       @environment = default_environment
       @base_url = 'https://app.useanvil.com/api/v1'
+      @graphql_url = 'https://app.useanvil.com/graphql'  # GraphQL endpoint
       @timeout = 120         # Read timeout in seconds
       @open_timeout = 30     # Connection open timeout
       @api_key = ENV['ANVIL_API_KEY']
