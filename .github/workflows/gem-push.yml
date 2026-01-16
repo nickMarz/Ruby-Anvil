@@ -28,7 +28,7 @@ jobs:
 
     - name: Create Release
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: '*.gem'
         generate_release_notes: true
