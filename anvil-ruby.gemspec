@@ -46,8 +46,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   # Minimal runtime dependencies
-  # base64 was extracted from stdlib in Ruby 3.4+, only add as dependency for 3.4+
-  spec.add_dependency 'base64' if RUBY_VERSION >= '3.4.0'
+  # base64 was extracted from stdlib in Ruby 3.4+, but gem is backward compatible
+  spec.add_dependency 'base64'
 
   # Development dependencies
   spec.add_development_dependency 'bundler', '>= 1.17'
