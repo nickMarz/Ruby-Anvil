@@ -2,8 +2,10 @@
 
 A Ruby gem for the [Anvil API](https://www.useanvil.com/docs/) - the fastest way to build document workflows.
 
+[![CI](https://github.com/nickMarz/Ruby-Anvil/workflows/CI/badge.svg)](https://github.com/nickMarz/Ruby-Anvil/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/anvil-ruby.svg)](https://badge.fury.io/rb/anvil-ruby)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-rubocop-brightgreen.svg)](https://github.com/rubocop/rubocop)
+[![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%202.5.0-red.svg)](https://github.com/nickMarz/Ruby-Anvil/blob/main/.ruby-version)
 
 Anvil is a suite of tools for managing document workflows:
 
@@ -31,6 +33,38 @@ Or install it yourself:
 ```bash
 $ gem install anvil-ruby
 ```
+
+## Feature Status
+
+Current coverage: **~30% of Anvil's API**. See [API_COVERAGE.md](API_COVERAGE.md) for detailed implementation status.
+
+### ✅ Implemented
+- **PDF Operations** - Fill templates, generate from HTML/Markdown
+- **E-Signatures (Basic)** - Create packets, get signing URLs, track status
+- **Webhooks** - Parse payloads, verify authenticity
+- **Core Infrastructure** - Rate limiting, error handling, flexible configuration
+
+### 🚧 Roadmap
+
+#### Phase 1: Core Features (v0.2.0)
+- [ ] Generic GraphQL support for custom queries
+- [ ] Complete e-signature features (update, send, void packets)
+- [ ] Basic workflow support (create, start workflows)
+- [ ] Basic webform support (create forms, handle submissions)
+
+#### Phase 2: Advanced Features (v0.3.0)
+- [ ] Full workflow implementation with data management
+- [ ] Full webform/Forge implementation
+- [ ] Cast (PDF template) management
+- [ ] Webhook management API
+
+#### Phase 3: AI & Enterprise (v0.4.0)
+- [ ] Document AI/OCR capabilities
+- [ ] Organization management
+- [ ] Embedded builders
+- [ ] Advanced utilities
+
+See our [GitHub Projects](https://github.com/nickMarz/Ruby-Anvil/projects) for detailed progress tracking.
 
 ## Quick Start
 
@@ -345,6 +379,30 @@ bundle exec rspec spec/anvil/pdf_spec.rb
 bundle exec rspec --format documentation
 ```
 
+## CI/CD with GitHub Actions
+
+This project uses GitHub Actions for continuous integration and automated gem publishing.
+
+### Automated Workflows
+
+- **CI Pipeline** - Runs tests, linting, and security checks on every push and PR
+- **Gem Publishing** - Automatically publishes to RubyGems.org when you create a version tag
+- **Dependency Updates** - Dependabot keeps dependencies up-to-date weekly
+
+### Quick Start
+
+1. Fork the repository
+2. Add your `RUBYGEMS_AUTH_TOKEN` secret to GitHub (Settings → Secrets)
+3. Push your changes - CI will run automatically
+4. Create a version tag to publish: `git tag v0.2.0 && git push --tags`
+
+See [.github/workflows/README.md](.github/workflows/README.md) for complete documentation on:
+- Setting up secrets and authentication
+- Running workflows manually
+- Debugging CI failures
+- Security best practices
+- Customizing workflows
+
 ## Philosophy
 
 This gem embraces Ruby's philosophy of developer happiness:
@@ -366,6 +424,8 @@ Please make sure to:
 - Add tests for new features
 - Follow Ruby style guide (run `rubocop`)
 - Update documentation
+- Ensure all CI checks pass (tests, linting, security)
+- Check the GitHub Actions tab to monitor your PR's build status
 
 ## License
 
