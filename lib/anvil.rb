@@ -15,6 +15,8 @@ require_relative 'anvil/rate_limiter'
 require_relative 'anvil/resources/base'
 require_relative 'anvil/resources/pdf'
 require_relative 'anvil/resources/signature'
+require_relative 'anvil/resources/workflow'
+require_relative 'anvil/resources/webform'
 require_relative 'anvil/resources/webhook'
 
 module Anvil
