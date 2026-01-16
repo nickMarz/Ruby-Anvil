@@ -54,6 +54,42 @@ module Anvil
     def production?
       environment == :production
     end
+
+    # Execute a GraphQL query using the default or configured API key
+    #
+    # @param query [String] The GraphQL query string
+    # @param variables [Hash] Variables for the query (optional)
+    # @param options [Hash] Additional options (including :api_key for override)
+    # @return [Response] The API response containing query results
+    #
+    # @example
+    #   result = Anvil.query(
+    #     query: 'query GetUser { currentUser { eid name } }',
+    #     variables: {}
+    #   )
+    def query(query:, variables: {}, **options)
+      api_key = options.delete(:api_key)
+      client = api_key ? Client.new(api_key: api_key) : Client.new
+      client.query(query: query, variables: variables, **options)
+    end
+
+    # Execute a GraphQL mutation using the default or configured API key
+    #
+    # @param mutation [String] The GraphQL mutation string
+    # @param variables [Hash] Variables for the mutation (optional)
+    # @param options [Hash] Additional options (including :api_key for override)
+    # @return [Response] The API response containing mutation results
+    #
+    # @example
+    #   result = Anvil.mutation(
+    #     mutation: 'mutation CreateCast($input: JSON) { createCast(input: $input) { eid } }',
+    #     variables: { input: { name: "Template" } }
+    #   )
+    def mutation(mutation:, variables: {}, **options)
+      api_key = options.delete(:api_key)
+      client = api_key ? Client.new(api_key: api_key) : Client.new
+      client.mutation(mutation: mutation, variables: variables, **options)
+    end
   end
 end
 

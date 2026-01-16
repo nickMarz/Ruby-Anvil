@@ -253,6 +253,52 @@ end
 
 ## Advanced Usage
 
+### Generic GraphQL Support
+
+For features not yet wrapped by the gem, you can execute custom GraphQL queries and mutations:
+
+```ruby
+# Execute a custom query
+response = Anvil.query(
+  query: <<~GRAPHQL,
+    query GetCurrentUser {
+      currentUser {
+        eid
+        name
+        email
+      }
+    }
+  GRAPHQL
+  variables: {}
+)
+
+user = response.data[:data][:currentUser]
+
+# Execute a custom mutation
+response = Anvil.mutation(
+  mutation: <<~GRAPHQL,
+    mutation CreateCast($input: JSON) {
+      createCast(input: $input) {
+        eid
+        name
+      }
+    }
+  GRAPHQL
+  variables: {
+    input: {
+      name: "My Template",
+      file: base64_pdf
+    }
+  }
+)
+
+# Use with custom client for multi-tenancy
+client = Anvil::Client.new(api_key: tenant_key)
+response = client.query(query: graphql_query, variables: vars)
+```
+
+See the [GraphQL Reference](https://www.useanvil.com/docs/api/graphql/reference/) for available queries and mutations.
+
 ### Multi-tenant Applications
 
 Use different API keys per request:
@@ -284,6 +330,9 @@ rescue Anvil::ValidationError => e
 rescue Anvil::AuthenticationError => e
   # Invalid or missing API key
   puts "Auth failed: #{e.message}"
+rescue Anvil::GraphQLError => e
+  # GraphQL query/mutation errors
+  puts "GraphQL error: #{e.message}"
 rescue Anvil::RateLimitError => e
   # Rate limit exceeded
   puts "Rate limited. Retry after: #{e.retry_after} seconds"
@@ -347,6 +396,7 @@ See the [examples](examples/) directory for complete working examples:
 - [PDF Generation](examples/generate_pdf.rb)
 - [E-signatures](examples/create_signature.rb)
 - [Webhook Handling](examples/verify_webhook.rb)
+- [Generic GraphQL Queries](examples/graphql_generic.rb)
 
 ## Development
 
