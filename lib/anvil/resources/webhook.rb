@@ -187,11 +187,11 @@ module Anvil
 
     private
 
-    def secure_compare(a, b)
-      return false unless a.bytesize == b.bytesize
+    def secure_compare(str1, str2)
+      return false unless str1.bytesize == str2.bytesize
 
-      l = a.unpack('C*')
-      r = b.unpack('C*')
+      l = str1.unpack('C*')
+      r = str2.unpack('C*')
       result = 0
 
       l.zip(r).each { |x, y| result |= x ^ y }

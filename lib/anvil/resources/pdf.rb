@@ -148,19 +148,23 @@ module Anvil
         payload[:title] = options[:title] if options[:title]
 
         # Page configuration
-        if options[:page]
-          page = options[:page]
-          payload[:page] = {}
-          payload[:page][:width] = page[:width] if page[:width]
-          payload[:page][:height] = page[:height] if page[:height]
-          payload[:page][:marginTop] = page[:margin_top] if page[:margin_top]
-          payload[:page][:marginBottom] = page[:margin_bottom] if page[:margin_bottom]
-          payload[:page][:marginLeft] = page[:margin_left] if page[:margin_left]
-          payload[:page][:marginRight] = page[:margin_right] if page[:margin_right]
-          payload[:page][:pageCount] = page[:page_count] if page.key?(:page_count)
-        end
+        payload[:page] = build_page_config(options[:page]) if options[:page]
 
         payload
+      end
+
+      def build_page_config(page)
+        return nil unless page
+
+        config = {}
+        config[:width] = page[:width] if page[:width]
+        config[:height] = page[:height] if page[:height]
+        config[:marginTop] = page[:margin_top] if page[:margin_top]
+        config[:marginBottom] = page[:margin_bottom] if page[:margin_bottom]
+        config[:marginLeft] = page[:margin_left] if page[:margin_left]
+        config[:marginRight] = page[:margin_right] if page[:margin_right]
+        config[:pageCount] = page[:page_count] if page.key?(:page_count)
+        config
       end
     end
   end

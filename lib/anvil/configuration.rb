@@ -4,7 +4,8 @@ module Anvil
   class Configuration
     ENVIRONMENTS = %i[development production].freeze
 
-    attr_accessor :api_key, :environment, :base_url, :graphql_url, :timeout, :open_timeout
+    attr_accessor :api_key, :base_url, :graphql_url, :timeout, :open_timeout
+    attr_reader :environment
     attr_writer :webhook_token
 
     def initialize
