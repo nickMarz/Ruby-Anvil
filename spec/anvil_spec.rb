@@ -123,7 +123,7 @@ RSpec.describe Anvil do
       expect(described_class.configuration.api_key).to eq(ENV.fetch('ANVIL_API_KEY', nil))
 
       # Environment should be back to default (depends on Rails/RACK_ENV/ANVIL_ENV)
-      expect([:development, :production]).to include(described_class.configuration.environment)
+      expect(%i[development production]).to include(described_class.configuration.environment)
     end
   end
 end

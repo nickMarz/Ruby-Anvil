@@ -14,7 +14,7 @@ RSpec.describe Anvil::Configuration do
       expect(config.timeout).to eq(120)
       expect(config.open_timeout).to eq(30)
       # Environment defaults based on various conditions, just verify it's set
-      expect([:development, :production]).to include(config.environment)
+      expect(%i[development production]).to include(config.environment)
     end
 
     it 'reads API key from environment' do
