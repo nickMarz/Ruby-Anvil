@@ -12,7 +12,9 @@ RSpec.describe Anvil::PDF do
     end
 
     it 'accepts attributes' do
-      pdf_with_attrs = described_class.new(pdf_data, { template_id: '123' })
+      # Ruby 2.7 keyword argument separation: explicitly pass hash as positional
+      attrs = { template_id: '123' }
+      pdf_with_attrs = described_class.new(pdf_data, attrs)
       expect(pdf_with_attrs.template_id).to eq('123')
     end
   end
