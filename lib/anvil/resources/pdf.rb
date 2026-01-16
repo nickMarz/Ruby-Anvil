@@ -4,8 +4,18 @@ module Anvil
   class PDF < Resources::Base
     attr_reader :raw_data
 
+    # Ruby 2.7 compatibility: explicitly handle both positional and keyword args
     def initialize(raw_data, attributes = {}, **options)
-      super(attributes, **options)
+      # Extract client from options if provided
+      client = options.delete(:client)
+
+      # Pass attributes as positional arg and client as keyword arg
+      if client
+        super(attributes, client: client)
+      else
+        super(attributes)
+      end
+
       @raw_data = raw_data
     end
 
