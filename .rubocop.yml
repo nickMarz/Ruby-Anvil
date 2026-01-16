@@ -83,11 +83,24 @@ RSpec/NoExpectationExample:
 RSpec/MultipleMemoizedHelpers:
   Max: 10
 
-# Disable Capybara cops (not needed for this library)
+# Disable Capybara and FactoryBot cops (not needed for this library)
+Capybara:
+  Enabled: false
+
+FactoryBot:
+  Enabled: false
+
+# Also disable the namespaced versions
+Capybara/RSpec/PredicateMatcher:
+  Enabled: false
+
 RSpec/Capybara:
   Enabled: false
 
-Capybara:
+RSpec/FactoryBot:
+  Enabled: false
+
+RSpecRails:
   Enabled: false
 
 # Relax metrics for complex methods
