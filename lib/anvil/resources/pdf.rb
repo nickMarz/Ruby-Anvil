@@ -153,7 +153,7 @@ module Anvil
         payload
       end
 
-      def build_page_config(page)
+      def self.build_page_config(page)
         return nil unless page
 
         config = {}
