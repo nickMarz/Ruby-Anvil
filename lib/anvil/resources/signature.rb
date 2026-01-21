@@ -76,6 +76,93 @@ module Anvil
       self
     end
 
+    # Update the signature packet
+    #
+    # @param name [String] Updated name for the packet
+    # @param signers [Array<Hash>] Updated signer information
+    # @param options [Hash] Additional update options
+    # @return [Signature] The updated signature packet
+    def update(name: nil, signers: nil, **options)
+      self.class.update(
+        eid: eid,
+        name: name,
+        signers: signers,
+        client: client,
+        **options
+      )
+    end
+
+    # Send a draft packet to signers
+    #
+    # @param options [Hash] Send options
+    # @option options [String] :email_subject Custom email subject
+    # @option options [String] :email_body Custom email body
+    # @return [Signature] The sent signature packet
+    # @raise [APIError] If packet is not in draft state
+    def send!(**options)
+      raise APIError, "Only draft packets can be sent. Current status: #{status}" unless draft?
+
+      self.class.send_packet(
+        eid: eid,
+        client: client,
+        **options
+      )
+    end
+
+    # Delete the signature packet
+    #
+    # @return [Boolean] true if deletion was successful
+    # @raise [APIError] If deletion fails
+    def delete!
+      self.class.delete_packet(eid: eid, client: client)
+    end
+
+    # Skip a signer in the signature flow
+    #
+    # @param signer_eid [String] The signer EID to skip
+    # @return [Signature] The updated signature packet
+    def skip_signer(signer_eid)
+      self.class.skip_signer(
+        packet_eid: eid,
+        signer_eid: signer_eid,
+        client: client
+      )
+    end
+
+    # Send a reminder notification to a signer
+    #
+    # @param signer_eid [String] The signer EID to notify
+    # @return [Boolean] true if notification was sent
+    def notify_signer(signer_eid)
+      self.class.notify_signer(
+        packet_eid: eid,
+        signer_eid: signer_eid,
+        client: client
+      )
+    end
+
+    # Void the document group (cancel signed documents)
+    #
+    # @param reason [String] Reason for voiding (optional)
+    # @return [Boolean] true if voiding was successful
+    def void!(reason: nil)
+      self.class.void_document_group(
+        eid: eid,
+        reason: reason,
+        client: client
+      )
+    end
+
+    # Expire all active signing tokens/sessions
+    #
+    # @return [Boolean] true if tokens were expired
+    def expire_tokens!
+      self.class.expire_signer_tokens(
+        eid: eid,
+        client: client
+      )
+    end
+
     class << self
       # Create a new signature packet
       #
@@ -158,6 +245,169 @@ module Anvil
         raise APIError, 'Failed to generate signing URL' unless data[:data] && data[:data][:generateEtchSignURL]
 
         data[:data][:generateEtchSignURL][:url]
+      end
+
+      # Update an existing signature packet
+      #
+      # @param eid [String] The packet EID to update
+      # @param name [String] Updated name for the packet (optional)
+      # @param signers [Array<Hash>] Updated signer information (optional)
+      # @param options [Hash] Additional options
+      # @return [Signature] The updated signature packet
+      def update(eid:, name: nil, signers: nil, client: nil, **options)
+        client ||= self.client
+
+        payload = { eid: eid }
+        payload[:name] = name if name
+        payload[:signers] = build_signers_payload(signers) if signers
+        payload[:signatureEmailSubject] = options[:email_subject] if options[:email_subject]
+        payload[:signatureEmailBody] = options[:email_body] if options[:email_body]
+        payload[:webhookURL] = options[:webhook_url] if options[:webhook_url]
+
+        response = client.post('https://graphql.useanvil.com/', {
+                                 query: update_packet_mutation,
+                                 variables: { input: payload }
+                               })
+
+        data = response.data
+        unless data[:data] && data[:data][:updateEtchPacket]
+          raise APIError, "Failed to update signature packet: #{data[:errors]}"
+        end
+
+        new(data[:data][:updateEtchPacket], client: client)
+      end
+
+      # Send a draft packet to signers
+      #
+      # @param eid [String] The packet EID to send
+      # @param options [Hash] Send options
+      # @return [Signature] The sent signature packet
+      def send_packet(eid:, client: nil, **options)
+        client ||= self.client
+
+        payload = { eid: eid }
+        payload[:signatureEmailSubject] = options[:email_subject] if options[:email_subject]
+        payload[:signatureEmailBody] = options[:email_body] if options[:email_body]
+
+        response = client.post('https://graphql.useanvil.com/', {
+                                 query: send_packet_mutation,
+                                 variables: { input: payload }
+                               })
+
+        data = response.data
+        unless data[:data] && data[:data][:sendEtchPacket]
+          raise APIError, "Failed to send signature packet: #{data[:errors]}"
+        end
+
+        new(data[:data][:sendEtchPacket], client: client)
+      end
+
+      # Delete a signature packet
+      #
+      # @param eid [String] The packet EID to delete
+      # @return [Boolean] true if deletion was successful
+      def delete_packet(eid:, client: nil)
+        client ||= self.client
+
+        response = client.post('https://graphql.useanvil.com/', {
+                                 query: delete_packet_mutation,
+                                 variables: { eid: eid }
+                               })
+
+        data = response.data
+        unless data[:data] && data[:data][:removeEtchPacket]
+          raise APIError, "Failed to delete signature packet: #{data[:errors]}"
+        end
+
+        data[:data][:removeEtchPacket][:ok] || true
+      end
+
+      # Skip a signer in the signature flow
+      #
+      # @param packet_eid [String] The packet EID
+      # @param signer_eid [String] The signer EID to skip
+      # @return [Signature] The updated signature packet
+      def skip_signer(packet_eid:, signer_eid:, client: nil)
+        client ||= self.client
+
+        response = client.post('https://graphql.useanvil.com/', {
+                                 query: skip_signer_mutation,
+                                 variables: {
+                                   eid: packet_eid,
+                                   signerEid: signer_eid
+                                 }
+                               })
+
+        data = response.data
+        raise APIError, "Failed to skip signer: #{data[:errors]}" unless data[:data] && data[:data][:skipSigner]
+
+        new(data[:data][:skipSigner], client: client)
+      end
+
+      # Send a reminder notification to a signer
+      #
+      # @param packet_eid [String] The packet EID
+      # @param signer_eid [String] The signer EID to notify
+      # @return [Boolean] true if notification was sent
+      def notify_signer(packet_eid:, signer_eid:, client: nil)
+        client ||= self.client
+
+        response = client.post('https://graphql.useanvil.com/', {
+                                 query: notify_signer_mutation,
+                                 variables: {
+                                   eid: packet_eid,
+                                   signerEid: signer_eid
+                                 }
+                               })
+
+        data = response.data
+        raise APIError, "Failed to notify signer: #{data[:errors]}" unless data[:data] && data[:data][:notifySigner]
+
+        data[:data][:notifySigner][:ok] || true
+      end
+
+      # Void a document group (cancel signed documents)
+      #
+      # @param eid [String] The packet EID
+      # @param reason [String] Reason for voiding (optional)
+      # @return [Boolean] true if voiding was successful
+      def void_document_group(eid:, reason: nil, client: nil)
+        client ||= self.client
+
+        variables = { eid: eid }
+        variables[:reason] = reason if reason
+
+        response = client.post('https://graphql.useanvil.com/', {
+                                 query: void_document_group_mutation,
+                                 variables: variables
+                               })
+
+        data = response.data
+        unless data[:data] && data[:data][:voidDocumentGroup]
+          raise APIError, "Failed to void document group: #{data[:errors]}"
+        end
+
+        data[:data][:voidDocumentGroup][:ok] || true
+      end
+
+      # Expire all active signing tokens for a packet
+      #
+      # @param eid [String] The packet EID
+      # @return [Boolean] true if tokens were expired
+      def expire_signer_tokens(eid:, client: nil)
+        client ||= self.client
+
+        response = client.post('https://graphql.useanvil.com/', {
+                                 query: expire_signer_tokens_mutation,
+                                 variables: { eid: eid }
+                               })
+
+        data = response.data
+        unless data[:data] && data[:data][:expireSignerTokens]
+          raise APIError, "Failed to expire signer tokens: #{data[:errors]}"
+        end
+
+        data[:data][:expireSignerTokens][:ok] || true
       end
 
       private
@@ -277,6 +527,102 @@ module Anvil
           }
         GRAPHQL
       end
+
+      def update_packet_mutation
+        <<~GRAPHQL
+          mutation UpdateEtchPacket($input: JSON) {
+            updateEtchPacket(variables: $input) {
+              eid
+              name
+              status
+              createdAt
+              signers {
+                eid
+                name
+                email
+                status
+              }
+            }
+          }
+        GRAPHQL
+      end
+
+      def send_packet_mutation
+        <<~GRAPHQL
+          mutation SendEtchPacket($input: JSON) {
+            sendEtchPacket(variables: $input) {
+              eid
+              name
+              status
+              createdAt
+              signers {
+                eid
+                name
+                email
+                status
+              }
+            }
+          }
+        GRAPHQL
+      end
+
+      def delete_packet_mutation
+        <<~GRAPHQL
+          mutation RemoveEtchPacket($eid: String!) {
+            removeEtchPacket(eid: $eid) {
+              ok
+            }
+          }
+        GRAPHQL
+      end
+
+      def skip_signer_mutation
+        <<~GRAPHQL
+          mutation SkipSigner($eid: String!, $signerEid: String!) {
+            skipSigner(eid: $eid, signerEid: $signerEid) {
+              eid
+              name
+              status
+              signers {
+                eid
+                name
+                email
+                status
+              }
+            }
+          }
+        GRAPHQL
+      end
+
+      def notify_signer_mutation
+        <<~GRAPHQL
+          mutation NotifySigner($eid: String!, $signerEid: String!) {
+            notifySigner(eid: $eid, signerEid: $signerEid) {
+              ok
+            }
+          }
+        GRAPHQL
+      end
+
+      def void_document_group_mutation
+        <<~GRAPHQL
+          mutation VoidDocumentGroup($eid: String!, $reason: String) {
+            voidDocumentGroup(eid: $eid, reason: $reason) {
+              ok
+            }
+          }
+        GRAPHQL
+      end
+
+      def expire_signer_tokens_mutation
+        <<~GRAPHQL
+          mutation ExpireSignerTokens($eid: String!) {
+            expireSignerTokens(eid: $eid) {
+              ok
+            }
+          }
+        GRAPHQL
+      end
     end
   end
 
@@ -323,6 +669,20 @@ module Anvil
         signer_id: eid,
         client_user_id: client_user_id
       )
+    end
+
+    # Skip this signer in the signature flow
+    def skip!
+      return nil unless packet
+
+      packet.skip_signer(eid)
+    end
+
+    # Send a reminder notification to this signer
+    def send_reminder!
+      return nil unless packet
+
+      packet.notify_signer(eid)
     end
   end
 end

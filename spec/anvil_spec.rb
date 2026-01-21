@@ -126,4 +126,82 @@ RSpec.describe Anvil do
       expect(described_class.configuration.environment).to(satisfy { |env| %i[development production].include?(env) })
     end
   end
+
+  describe '.query', :configured do
+    let(:graphql_query) do
+      <<~GRAPHQL
+        query GetCurrentUser {
+          currentUser { eid name }
+        }
+      GRAPHQL
+    end
+
+    it 'executes a GraphQL query using the module' do
+      stub_request(:post, 'https://graphql.useanvil.com/')
+        .to_return(
+          status: 200,
+          body: { data: { currentUser: { eid: 'u123', name: 'Test' } } }.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+
+      response = described_class.query(query: graphql_query)
+      expect(response.data[:currentUser][:eid]).to eq('u123')
+    end
+
+    it 'allows API key override' do
+      stub_request(:post, 'https://graphql.useanvil.com/')
+        .to_return(
+          status: 200,
+          body: { data: { currentUser: { eid: 'u456', name: 'Override' } } }.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+
+      response = described_class.query(
+        query: graphql_query,
+        api_key: 'override_key'
+      )
+      expect(response.data[:currentUser][:name]).to eq('Override')
+    end
+  end
+
+  describe '.mutation', :configured do
+    let(:graphql_mutation) do
+      <<~GRAPHQL
+        mutation CreateItem($input: JSON) {
+          createItem(input: $input) { eid }
+        }
+      GRAPHQL
+    end
+
+    it 'executes a GraphQL mutation using the module' do
+      stub_request(:post, 'https://graphql.useanvil.com/')
+        .to_return(
+          status: 200,
+          body: { data: { createItem: { eid: 'item123' } } }.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+
+      response = described_class.mutation(
+        mutation: graphql_mutation,
+        variables: { input: { name: 'New Item' } }
+      )
+      expect(response.data[:createItem][:eid]).to eq('item123')
+    end
+
+    it 'allows API key override' do
+      stub_request(:post, 'https://graphql.useanvil.com/')
+        .to_return(
+          status: 200,
+          body: { data: { createItem: { eid: 'item456' } } }.to_json,
+          headers: { 'Content-Type' => 'application/json' }
+        )
+
+      response = described_class.mutation(
+        mutation: graphql_mutation,
+        variables: { input: { name: 'Item' } },
+        api_key: 'tenant_key'
+      )
+      expect(response.data[:createItem][:eid]).to eq('item456')
+    end
+  end
 end
