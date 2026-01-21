@@ -107,9 +107,7 @@ module Anvil
                                })
 
         data = response.data
-        unless data[:data] && data[:data][:createForge]
-          raise APIError, "Failed to create webform: #{data[:errors]}"
-        end
+        raise APIError, "Failed to create webform: #{data[:errors]}" unless data[:data] && data[:data][:createForge]
 
         new(data[:data][:createForge], client: client)
       end

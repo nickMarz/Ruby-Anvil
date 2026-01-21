@@ -14,6 +14,11 @@ RSpec.describe Anvil::Client do
 
     it 'uses default configuration when no config provided' do
       allow(ENV).to receive(:fetch).with('ANVIL_API_KEY', nil).and_return('env_key')
+      allow(ENV).to receive(:fetch).with('ANVIL_WEBHOOK_TOKEN', nil).and_return(nil)
+
+      # Reset configuration to pick up the new ENV mock
+      Anvil.reset_configuration!
+
       client = described_class.new
       expect(client.config.api_key).to eq('env_key')
     end
@@ -57,9 +62,9 @@ RSpec.describe Anvil::Client do
         )
 
       response = client.query(query: graphql_query)
-      
+
       expect(response).to be_a(Anvil::Response)
-      expect(response.data[:data][:currentUser][:eid]).to eq('user123')
+      expect(response.data[:currentUser][:eid]).to eq('user123')
     end
 
     it 'executes a GraphQL query with variables' do
@@ -90,7 +95,7 @@ RSpec.describe Anvil::Client do
         variables: { eid: 'user123' }
       )
 
-      expect(response.data[:data][:user][:name]).to eq('John')
+      expect(response.data[:user][:name]).to eq('John')
     end
 
     it 'raises GraphQLError when query has errors' do
@@ -108,14 +113,14 @@ RSpec.describe Anvil::Client do
           headers: { 'Content-Type' => 'application/json' }
         )
 
-      expect {
+      expect do
         client.query(query: graphql_query)
-      }.to raise_error(Anvil::GraphQLError, /Field not found, Invalid query syntax/)
+      end.to raise_error(Anvil::GraphQLError, /Field not found, Invalid query syntax/)
     end
 
     it 'allows custom GraphQL URL' do
       custom_url = 'https://custom.graphql.endpoint/'
-      
+
       stub_request(:post, custom_url)
         .to_return(
           status: 200,
@@ -128,7 +133,7 @@ RSpec.describe Anvil::Client do
         graphql_url: custom_url
       )
 
-      expect(response.data[:data][:currentUser][:eid]).to eq('user123')
+      expect(response.data[:currentUser][:eid]).to eq('user123')
     end
   end
 
@@ -174,7 +179,7 @@ RSpec.describe Anvil::Client do
         variables: { input: { name: 'Jane Doe' } }
       )
 
-      expect(response.data[:data][:updateUser][:name]).to eq('Jane Doe')
+      expect(response.data[:updateUser][:name]).to eq('Jane Doe')
     end
 
     it 'executes a mutation without variables' do
@@ -195,7 +200,7 @@ RSpec.describe Anvil::Client do
         )
 
       response = client.mutation(mutation: simple_mutation)
-      expect(response.data[:data][:ping][:message]).to eq('pong')
+      expect(response.data[:ping][:message]).to eq('pong')
     end
 
     it 'raises GraphQLError when mutation has errors' do
@@ -212,9 +217,9 @@ RSpec.describe Anvil::Client do
           headers: { 'Content-Type' => 'application/json' }
         )
 
-      expect {
+      expect do
         client.mutation(mutation: graphql_mutation, variables: {})
-      }.to raise_error(Anvil::GraphQLError, /Validation failed/)
+      end.to raise_error(Anvil::GraphQLError, /Validation failed/)
     end
   end
 end

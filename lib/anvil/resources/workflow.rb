@@ -101,9 +101,7 @@ module Anvil
                                })
 
         data = response.data
-        unless data[:data] && data[:data][:createWeld]
-          raise APIError, "Failed to create workflow: #{data[:errors]}"
-        end
+        raise APIError, "Failed to create workflow: #{data[:errors]}" unless data[:data] && data[:data][:createWeld]
 
         new(data[:data][:createWeld], client: client)
       end

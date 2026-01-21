@@ -100,9 +100,7 @@ module Anvil
     # @return [Signature] The sent signature packet
     # @raise [APIError] If packet is not in draft state
     def send!(**options)
-      unless draft?
-        raise APIError, 'Only draft packets can be sent. Current status: #{status}'
-      end
+      raise APIError, "Only draft packets can be sent. Current status: #{status}" unless draft?
 
       self.class.send_packet(
         eid: eid,
@@ -341,9 +339,7 @@ module Anvil
                                })
 
         data = response.data
-        unless data[:data] && data[:data][:skipSigner]
-          raise APIError, "Failed to skip signer: #{data[:errors]}"
-        end
+        raise APIError, "Failed to skip signer: #{data[:errors]}" unless data[:data] && data[:data][:skipSigner]
 
         new(data[:data][:skipSigner], client: client)
       end
@@ -365,9 +361,7 @@ module Anvil
                                })
 
         data = response.data
-        unless data[:data] && data[:data][:notifySigner]
-          raise APIError, "Failed to notify signer: #{data[:errors]}"
-        end
+        raise APIError, "Failed to notify signer: #{data[:errors]}" unless data[:data] && data[:data][:notifySigner]
 
         data[:data][:notifySigner][:ok] || true
       end

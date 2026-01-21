@@ -145,7 +145,7 @@ RSpec.describe Anvil do
         )
 
       response = described_class.query(query: graphql_query)
-      expect(response.data[:data][:currentUser][:eid]).to eq('u123')
+      expect(response.data[:currentUser][:eid]).to eq('u123')
     end
 
     it 'allows API key override' do
@@ -160,7 +160,7 @@ RSpec.describe Anvil do
         query: graphql_query,
         api_key: 'override_key'
       )
-      expect(response.data[:data][:currentUser][:name]).to eq('Override')
+      expect(response.data[:currentUser][:name]).to eq('Override')
     end
   end
 
@@ -185,7 +185,7 @@ RSpec.describe Anvil do
         mutation: graphql_mutation,
         variables: { input: { name: 'New Item' } }
       )
-      expect(response.data[:data][:createItem][:eid]).to eq('item123')
+      expect(response.data[:createItem][:eid]).to eq('item123')
     end
 
     it 'allows API key override' do
@@ -201,7 +201,7 @@ RSpec.describe Anvil do
         variables: { input: { name: 'Item' } },
         api_key: 'tenant_key'
       )
-      expect(response.data[:data][:createItem][:eid]).to eq('item456')
+      expect(response.data[:createItem][:eid]).to eq('item456')
     end
   end
 end

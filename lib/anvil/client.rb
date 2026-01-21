@@ -73,12 +73,12 @@ module Anvil
     # Execute a GraphQL operation (query or mutation)
     def execute_graphql(query:, variables: {}, **options)
       graphql_url = options.delete(:graphql_url) || 'https://graphql.useanvil.com/'
-      
+
       payload = { query: query }
       payload[:variables] = variables unless variables.empty?
 
       response = post(graphql_url, payload, options)
-      
+
       # Check for GraphQL errors in response
       data = response.data
       if data[:errors] && !data[:errors].empty?

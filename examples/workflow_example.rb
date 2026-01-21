@@ -12,27 +12,27 @@ Anvil::EnvLoader.load
 
 # Configure Anvil
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.environment = :development
 end
 
-puts "=" * 60
-puts "Anvil Workflow Examples"
-puts "=" * 60
+puts '=' * 60
+puts 'Anvil Workflow Examples'
+puts '=' * 60
 puts
 
 # Example 1: Create a workflow
-puts "1. Create a workflow"
-puts "-" * 60
+puts '1. Create a workflow'
+puts '-' * 60
 
 begin
   workflow = Anvil::Workflow.create(
-    name: "Employee Onboarding",
-    forges: [ENV['ANVIL_FORM_EID_1'], ENV['ANVIL_FORM_EID_2']].compact,
-    casts: [ENV['ANVIL_TEMPLATE_EID']].compact,
+    name: 'Employee Onboarding',
+    forges: [ENV.fetch('ANVIL_FORM_EID_1', nil), ENV.fetch('ANVIL_FORM_EID_2', nil)].compact,
+    casts: [ENV.fetch('ANVIL_TEMPLATE_EID', nil)].compact,
     steps: [
-      { type: "form", id: ENV['ANVIL_FORM_EID_1'] || "form_1" },
-      { type: "signature", id: ENV['ANVIL_TEMPLATE_EID'] || "template_1" }
+      { type: 'form', id: ENV['ANVIL_FORM_EID_1'] || 'form_1' },
+      { type: 'signature', id: ENV['ANVIL_TEMPLATE_EID'] || 'template_1' }
     ].compact
   )
 
@@ -44,16 +44,16 @@ rescue Anvil::GraphQLError => e
   puts "GraphQL Error: #{e.message}"
 rescue Anvil::Error => e
   puts "Error: #{e.message}"
-  puts "Make sure to set ANVIL_FORM_EID_1 and ANVIL_TEMPLATE_EID in .env"
+  puts 'Make sure to set ANVIL_FORM_EID_1 and ANVIL_TEMPLATE_EID in .env'
 end
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 2: Get workflow details
-puts "2. Get workflow details"
-puts "-" * 60
+puts '2. Get workflow details'
+puts '-' * 60
 
 if defined?(workflow) && workflow
   begin
@@ -70,26 +70,26 @@ if defined?(workflow) && workflow
 end
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 3: Start a workflow
-puts "3. Start a workflow submission"
-puts "-" * 60
+puts '3. Start a workflow submission'
+puts '-' * 60
 
 if defined?(workflow) && workflow
   begin
     submission = workflow.start(
       data: {
-        employee_name: "John Doe",
-        employee_email: "john.doe@example.com",
+        employee_name: 'John Doe',
+        employee_email: 'john.doe@example.com',
         start_date: Date.today.to_s,
-        department: "Engineering",
-        position: "Senior Developer"
+        department: 'Engineering',
+        position: 'Senior Developer'
       }
     )
 
-    puts "Started workflow submission"
+    puts 'Started workflow submission'
     puts "Submission EID: #{submission.eid}"
     puts "Workflow EID: #{submission.weld_eid}"
     puts "Status: #{submission.status}"
@@ -104,17 +104,17 @@ if defined?(workflow) && workflow
 end
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 4: Continue a workflow submission
-puts "4. Continue workflow from a step"
-puts "-" * 60
+puts '4. Continue workflow from a step'
+puts '-' * 60
 
 if defined?(submission) && submission
   puts <<~INFO
     # To continue a submission from a specific step:
-    
+
     submission.continue(
       step_id: "approval_step",
       data: {
@@ -123,7 +123,7 @@ if defined?(submission) && submission
         approval_date: Date.today.to_s
       }
     )
-    
+
     puts "Continued to next step"
     puts "Current step: \#{submission.current_step}"
     puts "Completed steps: \#{submission.completed_steps.length}"
@@ -131,18 +131,18 @@ if defined?(submission) && submission
 end
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 5: Get workflow submissions
-puts "5. Get all workflow submissions"
-puts "-" * 60
+puts '5. Get all workflow submissions'
+puts '-' * 60
 
 if defined?(workflow) && workflow
   begin
     submissions = workflow.submissions(limit: 10)
     puts "Total submissions: #{submissions.length}"
-    
+
     submissions.each_with_index do |sub, idx|
       puts "\nSubmission #{idx + 1}:"
       puts "  EID: #{sub.eid}"
@@ -156,12 +156,12 @@ if defined?(workflow) && workflow
 end
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 6: Workflow patterns
-puts "6. Common workflow patterns"
-puts "-" * 60
+puts '6. Common workflow patterns'
+puts '-' * 60
 
 puts <<~PATTERNS
   # Multi-step onboarding workflow
@@ -177,25 +177,25 @@ puts <<~PATTERNS
       { type: "form", id: "banking_form" }
     ]
   )
-  
+
   # Start and track progress
   submission = workflow.start(data: employee_data)
-  
+
   while submission.in_progress?
     # Wait for user to complete current step
     sleep(60)
     submission.reload!
-    
+  #{'  '}
     puts "Progress: \#{submission.completed_steps.length}/\#{workflow.steps.length}"
   end
-  
+
   if submission.complete?
     puts "Onboarding complete!"
   end
 PATTERNS
 
 puts
-puts "=" * 60
-puts "Complete! Workflows allow you to combine forms, PDFs,"
-puts "and signatures into multi-step document processes."
-puts "=" * 60
+puts '=' * 60
+puts 'Complete! Workflows allow you to combine forms, PDFs,'
+puts 'and signatures into multi-step document processes.'
+puts '=' * 60

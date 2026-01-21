@@ -16,18 +16,18 @@ Anvil::EnvLoader.load
 
 # Configure Anvil
 Anvil.configure do |config|
-  config.api_key = ENV['ANVIL_API_KEY']
+  config.api_key = ENV.fetch('ANVIL_API_KEY', nil)
   config.environment = :development
 end
 
-puts "=" * 60
-puts "Anvil Generic GraphQL Support Examples"
-puts "=" * 60
+puts '=' * 60
+puts 'Anvil Generic GraphQL Support Examples'
+puts '=' * 60
 puts
 
 # Example 1: Query current user information
-puts "1. Get current user information"
-puts "-" * 60
+puts '1. Get current user information'
+puts '-' * 60
 
 begin
   response = Anvil.query(
@@ -53,12 +53,12 @@ rescue Anvil::Error => e
 end
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 2: Query with variables
-puts "2. Query etch packet with variables"
-puts "-" * 60
+puts '2. Query etch packet with variables'
+puts '-' * 60
 
 begin
   # You can pass variables to your queries
@@ -91,7 +91,7 @@ begin
     puts "Created: #{packet[:createdAt]}"
     puts "Signers: #{packet[:signers]&.length || 0}"
   else
-    puts "Packet not found (update ANVIL_PACKET_EID in .env)"
+    puts 'Packet not found (update ANVIL_PACKET_EID in .env)'
   end
 rescue Anvil::GraphQLError => e
   puts "GraphQL Error: #{e.message}"
@@ -100,16 +100,16 @@ rescue Anvil::Error => e
 end
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 3: Create mutation (example with a hypothetical Cast creation)
-puts "3. Execute a mutation (example structure)"
-puts "-" * 60
+puts '3. Execute a mutation (example structure)'
+puts '-' * 60
 
 puts <<~INFO
   # Example mutation structure (not executed):
-  
+
   response = Anvil.mutation(
     mutation: <<~GRAPHQL,
       mutation CreateCast($input: JSON) {
@@ -127,27 +127,27 @@ puts <<~INFO
       }
     }
   )
-  
+
   cast = response.data[:data][:createCast]
   puts "Created cast: \#{cast[:eid]}"
 INFO
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 4: Using client instance for multi-tenancy
-puts "4. Multi-tenant usage with custom API key"
-puts "-" * 60
+puts '4. Multi-tenant usage with custom API key'
+puts '-' * 60
 
 puts <<~INFO
   # For multi-tenant applications, you can use different API keys:
-  
+
   tenant_client = Anvil::Client.new(api_key: tenant.anvil_api_key)
   response = tenant_client.query(
     query: 'query { currentUser { name } }'
   )
-  
+
   # Or use the module-level methods with api_key parameter:
   response = Anvil.query(
     query: 'query { currentUser { name } }',
@@ -156,16 +156,16 @@ puts <<~INFO
 INFO
 
 puts
-puts "=" * 60
+puts '=' * 60
 puts
 
 # Example 5: Error handling
-puts "5. Error handling example"
-puts "-" * 60
+puts '5. Error handling example'
+puts '-' * 60
 
 puts <<~INFO
   # GraphQL errors are raised as Anvil::GraphQLError:
-  
+
   begin
     response = Anvil.query(
       query: 'query { invalidField { data } }'
@@ -181,8 +181,8 @@ puts <<~INFO
 INFO
 
 puts
-puts "=" * 60
-puts "Complete! Generic GraphQL support allows you to access"
-puts "any part of the Anvil API, even features not yet wrapped"
-puts "by dedicated Ruby methods."
-puts "=" * 60
+puts '=' * 60
+puts 'Complete! Generic GraphQL support allows you to access'
+puts 'any part of the Anvil API, even features not yet wrapped'
+puts 'by dedicated Ruby methods.'
+puts '=' * 60

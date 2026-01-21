@@ -47,8 +47,14 @@ module Anvil
 
       return [] if body.nil? || body.empty?
 
-      data = JSON.parse(body)
-      data['errors'] || data['fields'] || []
+      # Body might already be parsed if coming from Response#body
+      data = if body.is_a?(Hash)
+               body
+             else
+               JSON.parse(body)
+             end
+
+      data[:errors] || data['errors'] || data[:fields] || data['fields'] || []
     rescue JSON::ParserError
       []
     end
