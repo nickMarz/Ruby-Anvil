@@ -28,6 +28,7 @@ module Anvil
 
     def reset_configuration!
       self.configuration = Configuration.new
+      @default_client = nil
     end
 
     # Convenience methods for quick configuration
@@ -53,6 +54,30 @@ module Anvil
 
     def production?
       environment == :production
+    end
+
+    # Execute a GraphQL query
+    #
+    # @param query [String] The GraphQL query string
+    # @param variables [Hash] Variables to pass to the query
+    # @return [Hash] The query result data
+    def query(query:, variables: {})
+      default_client.query(query: query, variables: variables)
+    end
+
+    # Execute a GraphQL mutation
+    #
+    # @param mutation [String] The GraphQL mutation string
+    # @param variables [Hash] Variables to pass to the mutation
+    # @return [Hash] The mutation result data
+    def mutation(mutation:, variables: {})
+      default_client.mutation(mutation: mutation, variables: variables)
+    end
+
+    private
+
+    def default_client
+      @default_client ||= Client.new
     end
   end
 end

@@ -91,7 +91,7 @@ module Anvil
         payload = build_create_payload(name, signers, files, options)
 
         # Use full GraphQL endpoint URL
-        response = client.post('https://graphql.useanvil.com/', {
+        response = client.post(client.config.graphql_url, {
                                  query: create_packet_mutation,
                                  variables: { input: payload }
                                })
@@ -108,7 +108,7 @@ module Anvil
       def find(packet_eid, client: nil)
         client ||= self.client
 
-        response = client.post('https://graphql.useanvil.com/', {
+        response = client.post(client.config.graphql_url, {
                                  query: find_packet_query,
                                  variables: { eid: packet_eid }
                                })
@@ -126,7 +126,7 @@ module Anvil
         variables = { limit: limit, offset: offset }
         variables[:status] = status if status
 
-        response = client.post('https://graphql.useanvil.com/', {
+        response = client.post(client.config.graphql_url, {
                                  query: list_packets_query,
                                  variables: variables
                                })
@@ -149,7 +149,7 @@ module Anvil
         }
         payload[:clientUserId] = client_user_id if client_user_id
 
-        response = client.post('https://graphql.useanvil.com/', {
+        response = client.post(client.config.graphql_url, {
                                  query: generate_url_mutation,
                                  variables: { input: payload }
                                })

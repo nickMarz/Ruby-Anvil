@@ -34,6 +34,50 @@ module Anvil
       request(:delete, path, params: params, **options)
     end
 
+    # Execute a raw GraphQL request
+    #
+    # @param query_string [String] The GraphQL query or mutation string
+    # @param variables [Hash] Variables to pass to the query
+    # @return [Hash] The parsed response data
+    def graphql(query_string, variables: {})
+      response = post(config.graphql_url, {
+                        query: query_string,
+                        variables: variables
+                      })
+
+      body = response.body
+      body = response.data if body.is_a?(Anvil::Response)
+
+      if body.is_a?(Hash) && body[:errors] && !body[:errors].empty?
+        messages = body[:errors].map { |e| e[:message] || e['message'] }.compact
+        raise GraphQLError.new(
+          "GraphQL errors: #{messages.join(', ')}",
+          response,
+          graphql_errors: body[:errors]
+        )
+      end
+
+      body.is_a?(Hash) ? body[:data] : body
+    end
+
+    # Execute a GraphQL query
+    #
+    # @param query [String] The GraphQL query string
+    # @param variables [Hash] Variables to pass to the query
+    # @return [Hash] The query result data
+    def query(query:, variables: {})
+      graphql(query, variables: variables)
+    end
+
+    # Execute a GraphQL mutation
+    #
+    # @param mutation [String] The GraphQL mutation string
+    # @param variables [Hash] Variables to pass to the mutation
+    # @return [Hash] The mutation result data
+    def mutation(mutation:, variables: {})
+      graphql(mutation, variables: variables)
+    end
+
     private
 
     def request(method, path, params: nil, body: nil, headers: {}, **_options)
