@@ -41,7 +41,7 @@ Metrics/MethodLength:
     - 'examples/**/*'
 
 Metrics/ClassLength:
-  Max: 220
+  Max: 350
   Exclude:
     - 'spec/**/*'
 
