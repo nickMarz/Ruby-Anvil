@@ -59,8 +59,8 @@ RSpec.describe Anvil::Workflow, :configured do
   describe '#start' do
     it 'starts the workflow with data' do
       expect(client).to receive(:graphql).and_return({
-        createWeldData: { eid: 'wd_123', status: 'in_progress', data: { name: 'John' } }
-      })
+                                                       createWeldData: { eid: 'wd_123', status: 'in_progress', data: { name: 'John' } }
+                                                     })
 
       result = workflow.start(data: { name: 'John' })
       expect(result[:eid]).to eq('wd_123')
@@ -76,11 +76,11 @@ RSpec.describe Anvil::Workflow, :configured do
   describe '#submissions' do
     it 'returns workflow submissions' do
       expect(client).to receive(:graphql).and_return({
-        weldData: [
-          { eid: 'wd_1', status: 'complete', data: {} },
-          { eid: 'wd_2', status: 'in_progress', data: {} }
-        ]
-      })
+                                                       weldData: [
+                                                         { eid: 'wd_1', status: 'complete', data: {} },
+                                                         { eid: 'wd_2', status: 'in_progress', data: {} }
+                                                       ]
+                                                     })
 
       results = workflow.submissions
       expect(results.length).to eq(2)

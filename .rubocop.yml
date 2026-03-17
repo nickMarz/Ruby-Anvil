@@ -68,6 +68,12 @@ RSpec/MultipleExpectations:
 RSpec/MessageSpies:
   Enabled: false
 
+RSpec/StubbedMock:
+  Enabled: false
+
+RSpec/MultipleDescribes:
+  Enabled: false
+
 RSpec/FilePath:
   Enabled: false
 

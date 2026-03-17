@@ -155,7 +155,7 @@ RSpec.describe Anvil::SignatureSigner do
     end
 
     it 'raises error without packet' do
-      orphan = described_class.new({ eid: 'sgn_1' })
+      orphan = described_class.new({ eid: 'sgn_1' }, **{})
       expect { orphan.skip! }.to raise_error(Anvil::Error, /No packet/)
     end
   end
@@ -167,7 +167,7 @@ RSpec.describe Anvil::SignatureSigner do
     end
 
     it 'raises error without packet' do
-      orphan = described_class.new({ eid: 'sgn_1' })
+      orphan = described_class.new({ eid: 'sgn_1' }, **{})
       expect { orphan.send_reminder! }.to raise_error(Anvil::Error, /No packet/)
     end
   end

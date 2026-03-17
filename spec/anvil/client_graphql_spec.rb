@@ -105,12 +105,12 @@ RSpec.describe Anvil, :configured do
     let(:client) { instance_double(Anvil::Client) }
 
     before do
-      Anvil.instance_variable_set(:@default_client, nil)
+      described_class.instance_variable_set(:@default_client, nil)
       allow(Anvil::Client).to receive(:new).and_return(client)
     end
 
     after do
-      Anvil.instance_variable_set(:@default_client, nil)
+      described_class.instance_variable_set(:@default_client, nil)
     end
 
     it 'delegates to default client' do
@@ -119,7 +119,7 @@ RSpec.describe Anvil, :configured do
         variables: {}
       ).and_return({ currentUser: { eid: 'abc' } })
 
-      result = Anvil.query(query: 'query { currentUser { eid } }', variables: {})
+      result = described_class.query(query: 'query { currentUser { eid } }', variables: {})
       expect(result).to eq({ currentUser: { eid: 'abc' } })
     end
   end
@@ -128,12 +128,12 @@ RSpec.describe Anvil, :configured do
     let(:client) { instance_double(Anvil::Client) }
 
     before do
-      Anvil.instance_variable_set(:@default_client, nil)
+      described_class.instance_variable_set(:@default_client, nil)
       allow(Anvil::Client).to receive(:new).and_return(client)
     end
 
     after do
-      Anvil.instance_variable_set(:@default_client, nil)
+      described_class.instance_variable_set(:@default_client, nil)
     end
 
     it 'delegates to default client' do
@@ -142,7 +142,7 @@ RSpec.describe Anvil, :configured do
         variables: {}
       ).and_return({ createWeld: { eid: 'weld_123' } })
 
-      result = Anvil.mutation(mutation: 'mutation { createWeld { eid } }', variables: {})
+      result = described_class.mutation(mutation: 'mutation { createWeld { eid } }', variables: {})
       expect(result).to eq({ createWeld: { eid: 'weld_123' } })
     end
   end

@@ -69,8 +69,8 @@ RSpec.describe Anvil::Webform, :configured do
   describe '#submit' do
     it 'submits form data' do
       expect(client).to receive(:graphql).and_return({
-        createSubmission: { eid: 'sub_123', data: { full_name: 'John' }, createdAt: '2024-01-01' }
-      })
+                                                       createSubmission: { eid: 'sub_123', data: { full_name: 'John' }, createdAt: '2024-01-01' }
+                                                     })
 
       result = form.submit(data: { full_name: 'John', email: 'john@example.com' })
       expect(result[:eid]).to eq('sub_123')
@@ -86,11 +86,11 @@ RSpec.describe Anvil::Webform, :configured do
   describe '#submissions' do
     it 'returns form submissions' do
       expect(client).to receive(:graphql).and_return({
-        forgeSubmissions: [
-          { eid: 'sub_1', data: { full_name: 'John' } },
-          { eid: 'sub_2', data: { full_name: 'Jane' } }
-        ]
-      })
+                                                       forgeSubmissions: [
+                                                         { eid: 'sub_1', data: { full_name: 'John' } },
+                                                         { eid: 'sub_2', data: { full_name: 'Jane' } }
+                                                       ]
+                                                     })
 
       results = form.submissions
       expect(results.length).to eq(2)
