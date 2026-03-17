@@ -34,23 +34,22 @@ module Anvil
     private
 
     def parse_errors(response)
-      return [] unless response
+      data = extract_response_data(response)
+      return [] unless data
 
-      # Handle different response types
-      body = if response.respond_to?(:body)
-               response.body
-             elsif response.is_a?(String)
-               response
-             else
-               return []
-             end
-
-      return [] if body.nil? || body.empty?
-
-      data = JSON.parse(body)
-      data['errors'] || data['fields'] || []
+      data[:errors] || data['errors'] || data[:fields] || data['fields'] || []
     rescue JSON::ParserError
       []
+    end
+
+    def extract_response_data(response)
+      return nil unless response
+
+      body = response.respond_to?(:body) ? response.body : response
+      return nil unless body.is_a?(String) || body.is_a?(Hash)
+      return nil if body.respond_to?(:empty?) && body.empty?
+
+      body.is_a?(Hash) ? body : JSON.parse(body)
     end
   end
 
@@ -79,6 +78,16 @@ module Anvil
   class FileError < Error; end
   class FileNotFoundError < FileError; end
   class FileTooLargeError < FileError; end
+
+  # GraphQL errors
+  class GraphQLError < APIError
+    attr_reader :graphql_errors
+
+    def initialize(message, response = nil, graphql_errors: [])
+      @graphql_errors = graphql_errors
+      super(message, response)
+    end
+  end
 
   # Webhook errors
   class WebhookError < Error; end

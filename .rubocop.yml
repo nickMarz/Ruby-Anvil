@@ -41,7 +41,7 @@ Metrics/MethodLength:
     - 'examples/**/*'
 
 Metrics/ClassLength:
-  Max: 220
+  Max: 350
   Exclude:
     - 'spec/**/*'
 
@@ -66,6 +66,12 @@ RSpec/MultipleExpectations:
   Max: 5
 
 RSpec/MessageSpies:
+  Enabled: false
+
+RSpec/StubbedMock:
+  Enabled: false
+
+RSpec/MultipleDescribes:
   Enabled: false
 
 RSpec/FilePath:

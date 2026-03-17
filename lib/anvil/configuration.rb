@@ -11,7 +11,7 @@ module Anvil
     def initialize
       @environment = default_environment
       @base_url = 'https://app.useanvil.com/api/v1'
-      @graphql_url = 'https://app.useanvil.com/graphql' # GraphQL endpoint
+      @graphql_url = 'https://graphql.useanvil.com/' # GraphQL endpoint
       @timeout = 120         # Read timeout in seconds
       @open_timeout = 30     # Connection open timeout
       @api_key = ENV.fetch('ANVIL_API_KEY', nil)
