@@ -460,7 +460,7 @@ module Anvil
     attr_reader :packet
 
     def initialize(attributes, packet: nil)
-      super(attributes)
+      super(attributes, client: nil)
       @packet = packet
     end
 
