@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    anvil-ruby (0.1.0)
+    anvil-ruby (0.2.0)
       base64
 
 GEM
